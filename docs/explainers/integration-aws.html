@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Warden x AWS - Integration Deep Dive</title>
+<style>
+  :root{
+    --bg:#0a0c10; --panel:#14181f; --ink:#e9ecf2; --muted:#878ea0;
+    --blue:#5ec8e8; --gold:#ffd166; --green:#6ee7a8; --red:#ff6f6f;
+    --amber:#f5a623; --purple:#b79cf6; --teal:#52d6c0; --line:#39414f;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --display:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg); color:var(--ink); font-family:var(--sans);
+    display:flex; flex-direction:column; align-items:center; min-height:100%; -webkit-font-smoothing:antialiased;}
+  .topbar{width:100%; max-width:1180px; display:flex; align-items:baseline; justify-content:space-between; padding:18px 8px 10px; gap:12px;}
+  .brand{font-family:var(--display); font-size:19px; letter-spacing:.3px}
+  .brand b{color:var(--gold); font-weight:600}
+  .tagline{color:var(--muted); font-size:13px; font-family:var(--mono)}
+  .progress{width:100%; max-width:1180px; height:3px; background:#1a1f29; border-radius:3px; overflow:hidden}
+  .progress > i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--teal),var(--gold)); transition:width .4s ease}
+  .stage{position:relative; width:min(100%, calc((100vh - 210px) * 16 / 9)); max-width:1180px; aspect-ratio:16/9; margin:14px 0 8px;
+    border:1px solid #1d232e; border-radius:14px; overflow:hidden;
+    background:radial-gradient(120% 80% at 50% -10%, #11161f 0%, var(--bg) 60%), radial-gradient(circle at 1px 1px, rgba(255,255,255,.035) 1px, transparent 0);
+    background-size:auto, 26px 26px; box-shadow:0 30px 80px -40px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.03); cursor:pointer; user-select:none;}
+  svg#viz{position:absolute; inset:0; width:100%; height:100%; display:block}
+  #viz text{font-family:var(--sans); fill:var(--ink)}
+  #viz text.mono{font-family:var(--mono)}
+  #viz text.disp{font-family:var(--display)}
+  #scene *{transform-box:fill-box; transform-origin:center}
+  .chip{position:absolute; top:14px; left:16px; font-family:var(--mono); font-size:12px; color:var(--muted); letter-spacing:.4px;
+    background:rgba(10,12,16,.6); border:1px solid #232a36; border-radius:999px; padding:5px 12px; backdrop-filter:blur(4px);}
+  .chip b{color:var(--blue)}
+  .cap{position:absolute; left:0; right:0; bottom:0; padding:20px 7% 24px; font-size:clamp(13px,1.6vw,20px); line-height:1.5; text-align:center;
+    background:linear-gradient(0deg, rgba(7,9,12,.95) 32%, rgba(7,9,12,0)); min-height:80px; transition:opacity .45s ease; opacity:0;}
+  .cap b{color:var(--ink); font-weight:600}
+  .cap code{font-family:var(--mono); font-size:.92em; color:var(--blue); background:rgba(94,200,232,.1); padding:1px 6px; border-radius:5px}
+  .cap .g{color:var(--gold)} .cap .b{color:var(--blue)} .cap .gr{color:var(--green)}
+  .cap .r{color:var(--red)} .cap .p{color:var(--purple)} .cap .am{color:var(--amber)} .cap .t{color:var(--teal)}
+  .controls{width:100%; max-width:1180px; display:flex; align-items:center; gap:14px; padding:8px 6px 22px; flex-wrap:wrap;}
+  .btn{appearance:none; background:#161b24; color:var(--ink); border:1px solid #283040; width:42px; height:42px; border-radius:11px; font-size:16px; cursor:pointer; display:grid; place-items:center; transition:.15s;}
+  .btn:hover{background:#1d2533; border-color:#3a455a}
+  .btn.play{width:52px; height:52px; font-size:18px; background:#1b2330; border-color:#33415a}
+  .dots{display:flex; gap:7px; flex:1; flex-wrap:wrap; align-items:center; justify-content:center}
+  .dot{width:9px; height:9px; border-radius:50%; background:#2a3140; cursor:pointer; transition:.2s; border:none; padding:0}
+  .dot:hover{background:#46506a}
+  .dot.on{background:var(--gold); transform:scale(1.35); box-shadow:0 0 10px rgba(255,209,102,.5)}
+  .scenelabel{font-family:var(--mono); font-size:12.5px; color:var(--muted); min-width:220px; text-align:right}
+  .scenelabel b{color:var(--ink)}
+  .hint{width:100%; max-width:1180px; text-align:center; color:#5c6475; font-size:12px; font-family:var(--mono); padding-bottom:30px}
+  @media (max-width:640px){ .scenelabel{display:none} .tagline{display:none} }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><b>Warden</b> &times; AWS</div>
+    <div class="tagline">integration deep dive</div>
+  </div>
+  <div class="progress"><i id="bar"></i></div>
+  <div class="stage" id="stage" title="click to advance">
+    <svg id="viz" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <marker id="ah" markerWidth="11" markerHeight="11" refX="8.5" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+          <path d="M0,0 L10,5 L0,10 Z" fill="context-stroke"/>
+        </marker>
+        <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <g id="scene"></g>
+    </svg>
+    <div class="chip" id="chip"></div>
+    <div class="cap" id="cap"></div>
+  </div>
+  <div class="controls">
+    <button class="btn" id="prev" title="previous (&larr;)">&#9664;</button>
+    <button class="btn play" id="play" title="play / pause (space)">&#10073;&#10073;</button>
+    <button class="btn" id="next" title="next (&rarr;)">&#9654;</button>
+    <button class="btn" id="replay" title="replay scene (r)">&#8635;</button>
+    <div class="dots" id="dots"></div>
+    <div class="scenelabel" id="slabel"></div>
+  </div>
+  <div class="hint">space play/pause &nbsp;&middot;&nbsp; &larr; / &rarr; scenes &nbsp;&middot;&nbsp; r replay &nbsp;&middot;&nbsp; click canvas to advance</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg";
+const stage=document.getElementById("scene");
+const capEl=document.getElementById("cap");
+const chipEl=document.getElementById("chip");
+function S(tag,attrs={},kids=[]){
+  const n=document.createElementNS(NS,tag);
+  for(const k in attrs){ if(k==="text") n.textContent=attrs[k]; else n.setAttribute(k,attrs[k]); }
+  (Array.isArray(kids)?kids:[kids]).forEach(c=>c&&n.appendChild(c));
+  return n;
+}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function anim(node,frames,opts={}){
+  const a=node.animate(frames,Object.assign({fill:"both",easing:"cubic-bezier(.42,0,.2,1)"},opts));
+  return a.finished.catch(()=>{});
+}
+function fadeIn(node,{dur=600,delay=0,dy=14,dx=0}={}){
+  return anim(node,[{opacity:0,transform:`translate(${dx}px,${dy}px)`},{opacity:1,transform:"translate(0,0)"}],{duration:dur,delay});
+}
+function pop(node,{dur=460,delay=0}={}){
+  return anim(node,[{opacity:0,transform:"scale(.7)"},{opacity:1,transform:"scale(1)"}],{duration:dur,delay,easing:"cubic-bezier(.3,1.5,.5,1)"});
+}
+function drawOn(path,{dur=850,delay=0,ease="ease-in-out"}={}){
+  const L=path.getTotalLength(); path.style.strokeDasharray=L; path.style.strokeDashoffset=L;
+  return anim(path,[{strokeDashoffset:L},{strokeDashoffset:0}],{duration:dur,delay,easing:ease});
+}
+function pulse(node,{scale=1.16,dur=900}={}){ return node.animate([{transform:"scale(1)"},{transform:`scale(${scale})`},{transform:"scale(1)"}],{duration:dur,easing:"ease-in-out"}); }
+function T(x,y,str,{size=18,fill="var(--ink)",anchor="middle",cls="",weight=400,baseline="middle",ls=0}={}){
+  const t=S("text",{x,y,"text-anchor":anchor,"dominant-baseline":baseline,"font-size":size,"font-weight":weight,fill,class:cls,text:str});
+  if(ls)t.setAttribute("letter-spacing",ls); return t;
+}
+function box(cx,cy,w,h,label,{stroke="var(--blue)",fill="var(--panel)",text="var(--ink)",sub,rx=11,size=16}={}){
+  const g=S("g");
+  g.appendChild(S("rect",{x:cx-w/2,y:cy-h/2,width:w,height:h,rx,fill,stroke,"stroke-width":1.6}));
+  g.appendChild(T(cx,sub?cy-8:cy,label,{size,fill:text,cls:"mono"}));
+  if(sub) g.appendChild(T(cx,cy+13,sub,{size:11,fill:"var(--muted)",cls:"mono"}));
+  g._c={cx,cy,w,h}; return g;
+}
+function chip(cx,cy,label,{sub,color="var(--blue)",w=300,h=52}={}){
+  const g=S("g");
+  g.appendChild(S("rect",{x:cx-w/2,y:cy-h/2,width:w,height:h,rx:h/2,fill:"#11161d",stroke:color,"stroke-width":1.5}));
+  g.appendChild(T(cx,sub?cy-8:cy,label,{size:14,cls:"mono",fill:color,weight:600}));
+  if(sub) g.appendChild(T(cx,cy+11,sub,{size:10.5,fill:"var(--muted)",cls:"mono"}));
+  g._c={cx,cy,w,h}; return g;
+}
+function link(p1,p2,{color="var(--line)",width:wd=2,dash=false,arrow=true}={}){
+  const p=S("path",{d:`M ${p1[0]} ${p1[1]} L ${p2[0]} ${p2[1]}`,stroke:color,"stroke-width":wd,fill:"none","stroke-linecap":"round"});
+  if(arrow)p.setAttribute("marker-end","url(#ah)");
+  if(dash)p.setAttribute("stroke-dasharray","7 7");
+  return p;
+}
+const rightOf=g=>[g._c.cx+g._c.w/2, g._c.cy];
+const leftOf =g=>[g._c.cx-g._c.w/2, g._c.cy];
+const topOf  =g=>[g._c.cx, g._c.cy-g._c.h/2];
+const botOf  =g=>[g._c.cx, g._c.cy+g._c.h/2];
+function setCap(html){ capEl.innerHTML=html; capEl.style.opacity = html? 1 : 0; }
+function clearStage(){ while(stage.firstChild) stage.removeChild(stage.firstChild); }
+function head(g,kicker,title,accent="var(--blue)"){
+  const k=T(92,102,kicker,{size:13,cls:"mono",fill:accent,anchor:"start",weight:700,ls:3});
+  const h=T(92,150,title,{size:27,cls:"disp",fill:"var(--ink)",anchor:"start",weight:600});
+  g.appendChild(k); g.appendChild(h); fadeIn(k,{dy:8,dur:400}); fadeIn(h,{dy:12,dur:600,delay:80});
+  return h;
+}
+async function rows(g,items,{x=112,y0=232,step=80,live}){
+  for(const it of items){
+    const grp=S("g");
+    grp.appendChild(S("circle",{cx:x,cy:y0,r:4.5,fill:it.c||"var(--blue)"}));
+    grp.appendChild(T(x+22,y0-4,it.h,{size:18,anchor:"start",fill:"var(--ink)",weight:600}));
+    if(it.s) grp.appendChild(T(x+22,y0+18,it.s,{size:13.5,anchor:"start",fill:"var(--muted)"}));
+    g.appendChild(grp); fadeIn(grp,{dx:-12,dy:0,dur:380});
+    y0+=step; await wait(280); if(!live())return;
+  }
+}
+async function claimMap(g,rows,live,{accent="var(--teal)",platform="AWS"}={}){
+  g.appendChild(T(200,190,"Warden claim",{size:13,cls:"mono",fill:"var(--muted)",anchor:"start"}));
+  g.appendChild(T(560,190,platform+" native concept",{size:13,cls:"mono",fill:accent,anchor:"start"}));
+  let y=235;
+  for(const [claim,native] of rows){
+    const grp=S("g");
+    grp.appendChild(S("rect",{x:180,y:y-22,width:150,height:40,rx:9,fill:"#1d1808",stroke:"var(--gold)","stroke-width":1.3}));
+    grp.appendChild(T(255,y-2,claim,{size:14,cls:"mono",fill:"var(--gold)"}));
+    grp.appendChild(T(360,y-2,"->",{size:15,cls:"mono",fill:"var(--muted)"}));
+    grp.appendChild(T(410,y-2,native,{size:13.5,cls:"mono",fill:accent,anchor:"start"}));
+    g.appendChild(grp); fadeIn(grp,{dx:-10,dy:0,dur:340}); y+=62; await wait(240); if(!live())return;
+  }
+}
+
+/* ===================================================================== */
+const scenes=[];
+const SC=(title,hold,play)=>scenes.push({title,hold,play});
+const ACCENT="var(--teal)";  // AWS
+
+// 0 -- Title -------------------------------------------------------------
+SC("Title",2800,async({g,cap,live})=>{
+  const dot=S("circle",{cx:640,cy:250,r:9,fill:ACCENT,filter:"url(#glow)"}); g.appendChild(dot);
+  dot.animate([{opacity:.4},{opacity:1},{opacity:.4}],{duration:2600,iterations:Infinity,easing:"ease-in-out"});
+  pop(dot,{dur:700});
+  const w=T(640,360,"Warden  x  AWS",{size:52,cls:"disp",fill:"var(--ink)",weight:600}); g.appendChild(w);
+  await fadeIn(w,{dur:900,delay:300,dy:18}); if(!live())return;
+  const s=T(640,418,"The accountability layer for Bedrock AgentCore",{size:18,fill:"var(--muted)"}); g.appendChild(s);
+  await fadeIn(s,{dy:8});
+  cap(`The closest analogue in the market -- and the most natural fit. AgentCore does exposure and access; Warden adds the brake and the black-box recorder.`);
+});
+
+// 1 -- Where Warden sits -------------------------------------------------
+SC("Where Warden sits",3200,async({g,cap,live})=>{
+  head(g,"TOPOLOGY","On the MCP path, in front of the Gateway.",ACCENT);
+  const agent=box(300,360,180,74,"agent runtime",{stroke:"var(--blue)",size:14});
+  const W=box(620,360,180,90,"WARDEN",{stroke:"var(--gold)",size:17,sub:"policy + accountability"}); W.querySelector("rect").setAttribute("fill","#0f1219");
+  const gw=box(960,360,220,74,"AgentCore Gateway",{stroke:ACCENT,size:13,sub:"APIs / Lambdas as MCP"});
+  g.appendChild(agent); g.appendChild(W); g.appendChild(gw);
+  const l1=link(rightOf(agent),leftOf(W),{color:"#3a4150"}); const l2=link(rightOf(W),leftOf(gw),{color:ACCENT});
+  g.appendChild(l1); g.appendChild(l2);
+  await Promise.all([pop(agent),pop(W,{delay:150}),pop(gw,{delay:300}),drawOn(l1,{dur:400,delay:400}),drawOn(l2,{dur:400,delay:500})]); if(!live())return;
+  cap(`AgentCore Gateway already turns APIs and Lambdas into MCP tools. Warden inserts as the <b>policy + accountability layer</b> on that MCP path -- in front of the Gateway's endpoint.`);
+});
+
+// 2 -- The near 1:1 mapping (hero) --------------------------------------
+SC("AWS maps almost one-to-one",3400,async({g,cap,live})=>{
+  head(g,"THE STRONG FIT","AWS primitives are already Warden's shape.",ACCENT);
+  const maps=[
+    ["STS AssumeRole session","= the delegation (act)","var(--teal)"],
+    ["STS session tags","= native ABAC (attrs)","var(--blue)"],
+    ["session policy on AssumeRole","= the narrowing (scope)","var(--purple)"],
+  ];
+  let y=250;
+  for(const [l,s,c] of maps){ const ch=chip(500,y,l,{sub:s,color:c,w:520,h:60}); g.appendChild(ch); pop(ch,{dur:360}); y+=90; await wait(280); if(!live())return; }
+  cap(`This is the tightest mapping of any platform. An STS <code>AssumeRole</code> session <i>is</i> the delegation. Session tags <i>are</i> ABAC. The session policy <i>is</i> the scope. Almost nothing to translate.`);
+});
+
+// 3 -- Claim mapping -----------------------------------------------------
+SC("Claim mapping",3200,async({g,cap,live})=>{
+  head(g,"THE MAPPING","AgentCore & IAM concepts become Warden claims.",ACCENT);
+  await claimMap(g,[
+    ["sub","Cognito / IAM user behind the role"],
+    ["act","user -> STS session -> agent (AgentCore Identity)"],
+    ["roles","IAM role / Cognito groups"],
+    ["attrs","STS session tags"],
+    ["rel","resource-level IAM / tags scoped to session"],
+    ["scope","Gateway tool allow-list / session policy"],
+  ],live,{accent:ACCENT}); if(!live())return;
+  cap(`AgentCore Identity, Cognito, and IAM supply every claim Warden needs -- carried in the token, verified on the hot path.`);
+});
+
+// 4 -- What Warden adds over AgentCore ----------------------------------
+SC("Complementary, not a replacement",3400,async({g,cap,live})=>{
+  head(g,"THE POSITION","AgentCore exposes & controls. Warden proves.",ACCENT);
+  const ac=box(340,290,360,120,"",{stroke:ACCENT}); const wd=box(900,290,360,120,"",{stroke:"var(--gold)"});
+  g.appendChild(ac); g.appendChild(wd);
+  await Promise.all([pop(ac),pop(wd,{delay:180})]); if(!live())return;
+  g.appendChild(T(340,248,"AgentCore + IAM",{size:15,cls:"mono",fill:ACCENT}));
+  g.appendChild(T(900,248,"Warden adds",{size:15,cls:"mono",fill:"var(--gold)"}));
+  ["Gateway: tool exposure","IAM: access control","token vault + OAuth"].forEach((t,i)=>{ const e=T(185,285+i*26,"- "+t,{size:12.5,cls:"mono",fill:"var(--muted)",anchor:"start"}); g.appendChild(e); fadeIn(e,{dx:-8,dy:0,dur:280,delay:i*120}); });
+  ["synchronous human-approval hold","per-run budgets","hash-chained delegation record"].forEach((t,i)=>{ const e=T(745,285+i*26,"- "+t,{size:12.5,cls:"mono",fill:"var(--muted)",anchor:"start"}); g.appendChild(e); fadeIn(e,{dx:8,dy:0,dur:280,delay:i*120}); });
+  await wait(700); if(!live())return;
+  const t=box(640,470,720,54,"the brake + the black-box recorder on the action path",{stroke:"var(--gold)",fill:"#1d1808",size:15}); g.appendChild(t); await pop(t,{dur:500});
+  cap(`Position Warden as <b>complementary.</b> AgentCore does exposure and access control; Warden contributes the human brake, budgets, and the tamper-evident, provable delegation record -- <span class="t">not a Gateway replacement.</span>`);
+});
+
+// 5 -- Concrete flow -----------------------------------------------------
+SC("A governed call",3200,async({g,cap,live})=>{
+  head(g,"IN ACTION","Session-tag ABAC, enforced per action.",ACCENT);
+  const agent=box(230,340,150,72,"agent",{stroke:"var(--blue)"});
+  const W=box(540,340,180,88,"WARDEN",{stroke:"var(--gold)",size:16,sub:"session tags -> attrs"});
+  g.appendChild(agent); g.appendChild(W);
+  const l=link(rightOf(agent),leftOf(W),{color:"#3a4150"}); g.appendChild(l);
+  await Promise.all([pop(agent),pop(W,{delay:150}),drawOn(l,{dur:400})]); if(!live())return;
+  const ok=box(900,270,260,60,"query (region=us-east-1)",{stroke:"var(--green)",size:13,sub:"session tag matches -> ALLOW"});
+  const hold=box(900,410,260,60,"refund $40,000",{stroke:"var(--amber)",size:13,sub:"high value -> HOLD for human"});
+  g.appendChild(ok); g.appendChild(hold);
+  const lo=link(rightOf(W),leftOf(ok),{color:"var(--green)"}); const lh=link(rightOf(W),leftOf(hold),{color:"var(--amber)"});
+  g.appendChild(lo); g.appendChild(lh);
+  await Promise.all([pop(ok),pop(hold,{delay:150}),drawOn(lo,{dur:400}),drawOn(lh,{dur:400,delay:150})]); if(!live())return;
+  cap(`STS session tags flow straight into Warden's attributes -- so a call outside the session's region is denied, and a high-value one is <span class="am">held for a human</span>, both recorded against the STS-rooted chain.`);
+});
+
+// 6 -- The adapter + no forged authority --------------------------------
+SC("The adapter never signs",3000,async({g,cap,live})=>{
+  head(g,"TRUST","The adapter shapes claims. STS signs.",ACCENT);
+  const ad=box(300,330,220,80,"identity adapter",{stroke:"var(--blue)",sub:"untrusted client code"});
+  g.appendChild(ad); await pop(ad); if(!live())return;
+  const iss=box(700,270,260,70,"STS / Cognito issuer",{stroke:ACCENT,sub:"the only signer"});
+  const W=box(1030,270,150,70,"WARDEN",{stroke:"var(--gold)",size:15,sub:"verifies"});
+  g.appendChild(iss); g.appendChild(W);
+  const ask=link(rightOf(ad),leftOf(iss),{color:ACCENT,dash:true}); const ver=link(rightOf(iss),leftOf(W),{color:"var(--gold)"});
+  g.appendChild(ask); g.appendChild(ver);
+  await Promise.all([pop(iss),pop(W,{delay:150}),drawOn(ask,{dur:400}),drawOn(ver,{dur:400,delay:200})]); if(!live())return;
+  const key=T(300,430,"never holds its own signing key",{size:14,cls:"mono",fill:"var(--red)"}); g.appendChild(key); fadeIn(key,{dy:8});
+  cap(`The adapter drives the native <code>AssumeRole</code> exchange -- it <b>never signs authority itself.</b> STS and Cognito stay the signers; Warden verifies. No new high-value secret.`);
+});
+
+// 7 -- Deployment --------------------------------------------------------
+SC("Deployment",3000,async({g,cap,live})=>{
+  head(g,"DEPLOY","ECS / EKS sidecar, AWS-native plumbing.",ACCENT);
+  await rows(g,[
+    {h:"Sidecar on ECS Fargate or EKS.",s:"IRSA -> STS mints the token; one Warden per agent task.",c:ACCENT},
+    {h:"Evidence -> Amazon Security Lake (OCSF).",s:"Security Lake's native schema IS OCSF -- zero translation.",c:"var(--blue)"},
+    {h:"Audit + anchors -> S3 Object Lock (WORM).",s:"Keys from KMS; CAEP SETs -> your Shared-Signals receiver.",c:"var(--green)"},
+  ],{live,x:112,y0:250,step:96}); if(!live())return;
+  cap(`Every seam lines up with AWS-native services -- IRSA for identity, Security Lake for evidence, S3 Object Lock for the WORM audit. It slots into the account you already run.`);
+});
+
+// 8 -- Payoff ------------------------------------------------------------
+SC("What you get",3000,async({g,cap,live})=>{
+  head(g,"THE PAYOFF","The provable 'could-they-have-authorized-it'.",ACCENT);
+  await rows(g,[
+    {h:"The regulator's question, answered.",s:"Could the accountable human have authorized this -- and can you prove it? Yes.",c:"var(--gold)"},
+    {h:"A human brake AgentCore doesn't ship.",s:"Synchronous holds on high-risk actions, before they run.",c:"var(--amber)"},
+    {h:"One record across every AWS tool.",s:"RDS, internal APIs, Lambdas -- all reached only through Warden.",c:ACCENT},
+  ],{live,x:112,y0:250,step:96}); if(!live())return;
+  cap(`AgentCore gets your agents talking to tools. Warden makes every one of those actions <b>bounded, held-if-risky, and provable</b> -- the property the regulatory posture demands.`);
+});
+
+// 9 -- Close -------------------------------------------------------------
+SC("Close",3800,async({g,cap,live})=>{
+  const w=T(640,300,"Warden  x  AWS",{size:44,cls:"disp",fill:"var(--ink)",weight:600}); g.appendChild(w);
+  await fadeIn(w,{dy:16,dur:900}); if(!live())return;
+  const s=T(640,360,"Complementary to AgentCore: the brake & the black-box recorder.",{size:19,cls:"disp",fill:ACCENT}); g.appendChild(s);
+  await fadeIn(s,{dy:10}); if(!live())return;
+  const t=T(640,430,"STS session = act  -  session tags = attrs  -  session policy = scope",{size:14,cls:"mono",fill:"var(--muted)"}); g.appendChild(t);
+  await fadeIn(t,{dy:8});
+});
+
+/* ===================================================================== */
+const RUN={token:0, playing:true, i:0, finished:false};
+const bar=document.getElementById("bar");
+const dotsEl=document.getElementById("dots");
+const slabel=document.getElementById("slabel");
+const playBtn=document.getElementById("play");
+scenes.forEach((s,i)=>{ const d=document.createElement("button"); d.className="dot"; d.title=s.title; d.onclick=()=>go(i); dotsEl.appendChild(d); s._dot=d; });
+function chrome(i){
+  bar.style.width=((i)/(scenes.length-1)*100)+"%";
+  chipEl.innerHTML=`<b>${String(i+1).padStart(2,"0")}</b> / ${scenes.length} &middot; ${scenes[i].title}`;
+  slabel.innerHTML=`<b>${scenes[i].title}</b>`;
+  scenes.forEach((s,j)=>s._dot.classList.toggle("on",j===i));
+}
+function setPlayIcon(){ playBtn.innerHTML = RUN.playing ? "&#10073;&#10073;" : "&#9654;"; }
+async function go(i){
+  i=Math.max(0,Math.min(scenes.length-1,i));
+  const t=++RUN.token; RUN.i=i; RUN.finished=false;
+  clearStage(); setCap(""); chrome(i);
+  const live=()=>t===RUN.token; const cap=html=>{ if(live()) setCap(html); };
+  try{ await scenes[i].play({g:stage,cap,live}); }catch(e){ console.warn(e); }
+  if(!live()) return;
+  RUN.finished=true;
+  if(RUN.playing){ await wait(scenes[i].hold||1600); if(live() && RUN.playing){ if(i<scenes.length-1) go(i+1); else { RUN.playing=false; setPlayIcon(); } } }
+}
+function setPlaying(p){ RUN.playing=p; setPlayIcon(); if(p && RUN.finished){ if(RUN.i<scenes.length-1) go(RUN.i+1); else go(RUN.i); } }
+document.getElementById("next").onclick=()=>go(RUN.i+1);
+document.getElementById("prev").onclick=()=>go(RUN.i-1);
+document.getElementById("replay").onclick=()=>go(RUN.i);
+playBtn.onclick=()=>setPlaying(!RUN.playing);
+document.getElementById("stage").onclick=()=>go(RUN.i+1);
+document.addEventListener("keydown",e=>{
+  if(e.key===" "){e.preventDefault(); setPlaying(!RUN.playing);}
+  else if(e.key==="ArrowRight") go(RUN.i+1);
+  else if(e.key==="ArrowLeft") go(RUN.i-1);
+  else if(e.key==="r"||e.key==="R") go(RUN.i);
+  else if(e.key==="Home") go(0);
+});
+setPlayIcon(); go(0);
+</script>
+</body>
+</html>

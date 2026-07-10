@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Warden — Explainers</title>
+<style>
+  :root{
+    --bg:#0a0c10; --panel:#14181f; --ink:#e9ecf2; --muted:#878ea0;
+    --blue:#5ec8e8; --gold:#ffd166; --green:#6ee7a8; --line:#39414f;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --display:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:radial-gradient(120% 80% at 50% -10%, #11161f 0%, var(--bg) 60%), var(--bg);
+    color:var(--ink); font-family:var(--sans); line-height:1.5; min-height:100vh;
+    -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:940px; margin:0 auto; padding:56px 22px 80px}
+  header{border-bottom:1px solid var(--line); padding-bottom:26px; margin-bottom:34px}
+  .brand{font-family:var(--display); font-size:30px; letter-spacing:.3px}
+  .brand b{color:var(--gold); font-weight:600}
+  .tagline{color:var(--muted); font-family:var(--mono); font-size:13px; margin-top:8px}
+  .tagline a{color:var(--blue); text-decoration:none}
+  h2{font-family:var(--mono); font-size:12px; font-weight:600; text-transform:uppercase;
+    letter-spacing:1.4px; color:var(--muted); margin:38px 0 14px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px}
+  a.card{display:block; text-decoration:none; color:inherit; background:var(--panel);
+    border:1px solid #232a36; border-radius:13px; padding:18px 18px 16px; transition:.16s;}
+  a.card:hover{border-color:#3a455a; transform:translateY(-2px);
+    box-shadow:0 18px 40px -28px rgba(0,0,0,.9)}
+  .card .t{font-family:var(--display); font-size:18px; margin-bottom:5px}
+  .card .d{color:var(--muted); font-size:13.5px}
+  .card .go{margin-top:12px; font-family:var(--mono); font-size:11.5px; color:var(--blue); letter-spacing:.4px}
+  footer{margin-top:44px; padding-top:22px; border-top:1px solid var(--line);
+    color:var(--muted); font-size:13px; font-family:var(--mono)}
+  footer a{color:var(--blue); text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>Warden</b> — Explainers</div>
+    <div class="tagline">an action control plane for AI agents ·
+      <a href="https://github.com/vijayvedula/warden">github.com/vijayvedula/warden</a></div>
+  </header>
+
+  <h2>Start here</h2>
+  <div class="grid">
+    <a class="card" href="warden-overview.html">
+      <div class="t">The Platform</div>
+      <div class="d">What Warden is and the problem it solves: a brake and a black-box recorder for agent actions.</div>
+      <div class="go">VIEW ▸</div>
+    </a>
+    <a class="card" href="accountable-authorization.html">
+      <div class="t">Accountable Authorization</div>
+      <div class="d">The token-as-interface model — who an agent acts for, and how it stays provable.</div>
+      <div class="go">VIEW ▸</div>
+    </a>
+    <a class="card" href="reference-architecture.html">
+      <div class="t">Reference Architecture</div>
+      <div class="d">How the proxy, policy engine, approval queue, and audit chain fit together.</div>
+      <div class="go">VIEW ▸</div>
+    </a>
+    <a class="card" href="threat-model.html">
+      <div class="t">Threat Model</div>
+      <div class="d">What Warden defends, what it doesn't, and where the trust boundaries sit.</div>
+      <div class="go">VIEW ▸</div>
+    </a>
+  </div>
+
+  <h2>Integrations</h2>
+  <div class="grid">
+    <a class="card" href="platform-integration.html">
+      <div class="t">Platform Integration</div>
+      <div class="d">The one coupling point — a signed token — and how any platform maps to it.</div>
+      <div class="go">VIEW ▸</div>
+    </a>
+    <a class="card" href="integration-databricks.html">
+      <div class="t">Warden × Databricks</div>
+      <div class="d">On-behalf-of-user + Unity Catalog grants at the action boundary.</div>
+      <div class="go">VIEW ▸</div>
+    </a>
+    <a class="card" href="integration-aws.html">
+      <div class="t">Warden × AWS</div>
+      <div class="d">Bedrock AgentCore — STS AssumeRole + session tags as native ABAC.</div>
+      <div class="go">VIEW ▸</div>
+    </a>
+    <a class="card" href="integration-google.html">
+      <div class="t">Warden × Google</div>
+      <div class="d">Vertex ADK / A2A — workload identity and per-hop delegation.</div>
+      <div class="go">VIEW ▸</div>
+    </a>
+    <a class="card" href="integration-langgraph.html">
+      <div class="t">Warden × LangGraph</div>
+      <div class="d">Route a ReAct agent's tool calls through the proxy with one line.</div>
+      <div class="go">VIEW ▸</div>
+    </a>
+  </div>
+
+  <footer>
+    Source, SDK, and runnable examples:
+    <a href="https://github.com/vijayvedula/warden">github.com/vijayvedula/warden</a>
+  </footer>
+</div>
+</body>
+</html>

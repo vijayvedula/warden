@@ -12,6 +12,10 @@ is the *brake* and the *black-box recorder* for agent actions.
 
 > MVP status: single-node, file-backed, MCP stdio transport. Not production-hardened.
 
+**▶ New here? Watch the [animated explainers](https://vijayvedula.github.io/warden/)** —
+short visual walkthroughs of what Warden is, how it authorizes, and how it plugs
+into each platform. ([full list below](#explainers).)
+
 ## Quickstart
 
 ```sh
@@ -125,6 +129,25 @@ and [docs/twelve-factor.md](docs/twelve-factor.md) for cloud-native operation
 - **Multi-tenant control surface** + a hosted approval UI.
 - **More adapters** -- OpenAI Agents SDK, CrewAI, AutoGen; TS/JS token builder.
 - **Externally-anchored audit** -- a public transparency log for the signed anchor.
+
+## Explainers
+
+Short **animated explainers** (self-contained HTML decks). Browse them all at the
+**[explainers index](https://vijayvedula.github.io/warden/)**, or jump straight in:
+
+**Core**
+- [The Platform](https://vijayvedula.github.io/warden/warden-overview.html) — what Warden is and the problem it solves
+- [Accountable Authorization](https://vijayvedula.github.io/warden/accountable-authorization.html) — the token-as-interface trust model
+- [Reference Architecture](https://vijayvedula.github.io/warden/reference-architecture.html) — how the pieces fit together
+- [Threat Model](https://vijayvedula.github.io/warden/threat-model.html) — what Warden defends, and what it doesn't
+
+**Integrations** (pair with the runnable [`examples/`](examples/))
+- [Platform Integration](https://vijayvedula.github.io/warden/platform-integration.html) — the one coupling point, mapped to any platform
+- [Warden × Databricks](https://vijayvedula.github.io/warden/integration-databricks.html) · [× AWS](https://vijayvedula.github.io/warden/integration-aws.html) · [× Google](https://vijayvedula.github.io/warden/integration-google.html) · [× LangGraph](https://vijayvedula.github.io/warden/integration-langgraph.html)
+
+> The decks are published from [`docs/explainers/`](docs/explainers/) via GitHub
+> Pages. Enable it once the repo is public: **Settings → Pages → Source: GitHub
+> Actions**. Until then the source HTML renders locally in any browser.
 
 ## License
 

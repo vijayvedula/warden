@@ -31,8 +31,22 @@ venv/
 .vscode/
 *.swp
 
-# Non-public docs: rendered explainers / voiceover / TTS media + fundraising
-# material. Kept locally, excluded from the public repo.
-/docs/explainers/
+# Explainers: exclude the folder by default, then re-include the curated set of
+# product explainer decks (self-contained HTML, published via GitHub Pages).
+# Voiceover (.vo.md), TTS scripts (.elevenlabs.txt), the investor pitch, the
+# internal trading demo, and the standards thought-pieces stay excluded.
+/docs/explainers/*
+!/docs/explainers/index.html
+!/docs/explainers/warden-overview.html
+!/docs/explainers/accountable-authorization.html
+!/docs/explainers/reference-architecture.html
+!/docs/explainers/threat-model.html
+!/docs/explainers/platform-integration.html
+!/docs/explainers/integration-databricks.html
+!/docs/explainers/integration-aws.html
+!/docs/explainers/integration-google.html
+!/docs/explainers/integration-langgraph.html
+
+# Fundraising material — kept locally, never committed.
 /docs/warden-seed-deck.md
 /docs/warden-deck.html

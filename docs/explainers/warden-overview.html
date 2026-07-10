@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Warden - The Platform - an animated explainer</title>
+<style>
+  :root{
+    --bg:#0a0c10; --panel:#14181f; --ink:#e9ecf2; --muted:#878ea0;
+    --blue:#5ec8e8; --gold:#ffd166; --green:#6ee7a8; --red:#ff6f6f;
+    --amber:#f5a623; --purple:#b79cf6; --teal:#52d6c0; --line:#39414f;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --display:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg); color:var(--ink); font-family:var(--sans);
+    display:flex; flex-direction:column; align-items:center; min-height:100%; -webkit-font-smoothing:antialiased;}
+  .topbar{width:100%; max-width:1180px; display:flex; align-items:baseline; justify-content:space-between; padding:18px 8px 10px; gap:12px;}
+  .brand{font-family:var(--display); font-size:19px; letter-spacing:.3px}
+  .brand b{color:var(--gold); font-weight:600}
+  .tagline{color:var(--muted); font-size:13px; font-family:var(--mono)}
+  .progress{width:100%; max-width:1180px; height:3px; background:#1a1f29; border-radius:3px; overflow:hidden}
+  .progress > i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--blue),var(--gold)); transition:width .4s ease}
+  .stage{position:relative; width:min(100%, calc((100vh - 210px) * 16 / 9)); max-width:1180px; aspect-ratio:16/9; margin:14px 0 8px;
+    border:1px solid #1d232e; border-radius:14px; overflow:hidden;
+    background:radial-gradient(120% 80% at 50% -10%, #11161f 0%, var(--bg) 60%), radial-gradient(circle at 1px 1px, rgba(255,255,255,.035) 1px, transparent 0);
+    background-size:auto, 26px 26px; box-shadow:0 30px 80px -40px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.03); cursor:pointer; user-select:none;}
+  svg#viz{position:absolute; inset:0; width:100%; height:100%; display:block}
+  #viz text{font-family:var(--sans); fill:var(--ink)}
+  #viz text.mono{font-family:var(--mono)}
+  #viz text.disp{font-family:var(--display)}
+  #scene *{transform-box:fill-box; transform-origin:center}
+  .chip{position:absolute; top:14px; left:16px; font-family:var(--mono); font-size:12px; color:var(--muted); letter-spacing:.4px;
+    background:rgba(10,12,16,.6); border:1px solid #232a36; border-radius:999px; padding:5px 12px; backdrop-filter:blur(4px);}
+  .chip b{color:var(--blue)}
+  .cap{position:absolute; left:0; right:0; bottom:0; padding:20px 7% 24px; font-size:clamp(13px,1.6vw,20px); line-height:1.5; text-align:center;
+    background:linear-gradient(0deg, rgba(7,9,12,.95) 32%, rgba(7,9,12,0)); min-height:80px; transition:opacity .45s ease; opacity:0;}
+  .cap b{color:var(--ink); font-weight:600}
+  .cap code{font-family:var(--mono); font-size:.92em; color:var(--blue); background:rgba(94,200,232,.1); padding:1px 6px; border-radius:5px}
+  .cap .g{color:var(--gold)} .cap .b{color:var(--blue)} .cap .gr{color:var(--green)}
+  .cap .r{color:var(--red)} .cap .p{color:var(--purple)} .cap .am{color:var(--amber)} .cap .t{color:var(--teal)}
+  .controls{width:100%; max-width:1180px; display:flex; align-items:center; gap:14px; padding:8px 6px 22px; flex-wrap:wrap;}
+  .btn{appearance:none; background:#161b24; color:var(--ink); border:1px solid #283040; width:42px; height:42px; border-radius:11px; font-size:16px; cursor:pointer; display:grid; place-items:center; transition:.15s;}
+  .btn:hover{background:#1d2533; border-color:#3a455a}
+  .btn.play{width:52px; height:52px; font-size:18px; background:#1b2330; border-color:#33415a}
+  .dots{display:flex; gap:7px; flex:1; flex-wrap:wrap; align-items:center; justify-content:center}
+  .dot{width:9px; height:9px; border-radius:50%; background:#2a3140; cursor:pointer; transition:.2s; border:none; padding:0}
+  .dot:hover{background:#46506a}
+  .dot.on{background:var(--gold); transform:scale(1.35); box-shadow:0 0 10px rgba(255,209,102,.5)}
+  .scenelabel{font-family:var(--mono); font-size:12.5px; color:var(--muted); min-width:220px; text-align:right}
+  .scenelabel b{color:var(--ink)}
+  .hint{width:100%; max-width:1180px; text-align:center; color:#5c6475; font-size:12px; font-family:var(--mono); padding-bottom:30px}
+  @media (max-width:640px){ .scenelabel{display:none} .tagline{display:none} }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><b>Warden</b> &mdash; The Platform</div>
+    <div class="tagline">a 5-minute overview</div>
+  </div>
+  <div class="progress"><i id="bar"></i></div>
+  <div class="stage" id="stage" title="click to advance">
+    <svg id="viz" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <marker id="ah" markerWidth="11" markerHeight="11" refX="8.5" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+          <path d="M0,0 L10,5 L0,10 Z" fill="context-stroke"/>
+        </marker>
+        <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <radialGradient id="halo"><stop offset="0%" stop-color="#ffd166" stop-opacity=".5"/><stop offset="100%" stop-color="#ffd166" stop-opacity="0"/></radialGradient>
+      </defs>
+      <g id="scene"></g>
+    </svg>
+    <div class="chip" id="chip"></div>
+    <div class="cap" id="cap"></div>
+  </div>
+  <div class="controls">
+    <button class="btn" id="prev" title="previous (&larr;)">&#9664;</button>
+    <button class="btn play" id="play" title="play / pause (space)">&#10073;&#10073;</button>
+    <button class="btn" id="next" title="next (&rarr;)">&#9654;</button>
+    <button class="btn" id="replay" title="replay scene (r)">&#8635;</button>
+    <div class="dots" id="dots"></div>
+    <div class="scenelabel" id="slabel"></div>
+  </div>
+  <div class="hint">space play/pause &nbsp;&middot;&nbsp; &larr; / &rarr; scenes &nbsp;&middot;&nbsp; r replay &nbsp;&middot;&nbsp; click canvas to advance</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg";
+const stage=document.getElementById("scene");
+const capEl=document.getElementById("cap");
+const chipEl=document.getElementById("chip");
+function S(tag,attrs={},kids=[]){
+  const n=document.createElementNS(NS,tag);
+  for(const k in attrs){ if(k==="text") n.textContent=attrs[k]; else n.setAttribute(k,attrs[k]); }
+  (Array.isArray(kids)?kids:[kids]).forEach(c=>c&&n.appendChild(c));
+  return n;
+}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function anim(node,frames,opts={}){
+  const a=node.animate(frames,Object.assign({fill:"both",easing:"cubic-bezier(.42,0,.2,1)"},opts));
+  return a.finished.catch(()=>{});
+}
+function fadeIn(node,{dur=600,delay=0,dy=14,dx=0}={}){
+  return anim(node,[{opacity:0,transform:`translate(${dx}px,${dy}px)`},{opacity:1,transform:"translate(0,0)"}],{duration:dur,delay});
+}
+function pop(node,{dur=460,delay=0}={}){
+  return anim(node,[{opacity:0,transform:"scale(.7)"},{opacity:1,transform:"scale(1)"}],{duration:dur,delay,easing:"cubic-bezier(.3,1.5,.5,1)"});
+}
+function drawOn(path,{dur=850,delay=0,ease="ease-in-out"}={}){
+  const L=path.getTotalLength(); path.style.strokeDasharray=L; path.style.strokeDashoffset=L;
+  return anim(path,[{strokeDashoffset:L},{strokeDashoffset:0}],{duration:dur,delay,easing:ease});
+}
+function pulse(node,{scale=1.16,dur=900}={}){ return node.animate([{transform:"scale(1)"},{transform:`scale(${scale})`},{transform:"scale(1)"}],{duration:dur,easing:"ease-in-out"}); }
+function T(x,y,str,{size=18,fill="var(--ink)",anchor="middle",cls="",weight=400,baseline="middle",ls=0}={}){
+  const t=S("text",{x,y,"text-anchor":anchor,"dominant-baseline":baseline,"font-size":size,"font-weight":weight,fill,class:cls,text:str});
+  if(ls)t.setAttribute("letter-spacing",ls); return t;
+}
+function box(cx,cy,w,h,label,{stroke="var(--blue)",fill="var(--panel)",text="var(--ink)",sub,rx=11,size=16}={}){
+  const g=S("g");
+  g.appendChild(S("rect",{x:cx-w/2,y:cy-h/2,width:w,height:h,rx,fill,stroke,"stroke-width":1.6}));
+  g.appendChild(T(cx,sub?cy-8:cy,label,{size,fill:text,cls:"mono"}));
+  if(sub) g.appendChild(T(cx,cy+13,sub,{size:11,fill:"var(--muted)",cls:"mono"}));
+  g._c={cx,cy,w,h}; return g;
+}
+function chip(cx,cy,label,{sub,color="var(--blue)",w=300,h=52}={}){
+  const g=S("g");
+  g.appendChild(S("rect",{x:cx-w/2,y:cy-h/2,width:w,height:h,rx:h/2,fill:"#11161d",stroke:color,"stroke-width":1.5}));
+  g.appendChild(T(cx,sub?cy-8:cy,label,{size:14,cls:"mono",fill:color,weight:600}));
+  if(sub) g.appendChild(T(cx,cy+11,sub,{size:10.5,fill:"var(--muted)",cls:"mono"}));
+  g._c={cx,cy,w,h}; return g;
+}
+function link(p1,p2,{color="var(--line)",width:wd=2,dash=false,arrow=true}={}){
+  const p=S("path",{d:`M ${p1[0]} ${p1[1]} L ${p2[0]} ${p2[1]}`,stroke:color,"stroke-width":wd,fill:"none","stroke-linecap":"round"});
+  if(arrow)p.setAttribute("marker-end","url(#ah)");
+  if(dash)p.setAttribute("stroke-dasharray","7 7");
+  return p;
+}
+const rightOf=g=>[g._c.cx+g._c.w/2, g._c.cy];
+const leftOf =g=>[g._c.cx-g._c.w/2, g._c.cy];
+const topOf  =g=>[g._c.cx, g._c.cy-g._c.h/2];
+const botOf  =g=>[g._c.cx, g._c.cy+g._c.h/2];
+function setCap(html){ capEl.innerHTML=html; capEl.style.opacity = html? 1 : 0; }
+function clearStage(){ while(stage.firstChild) stage.removeChild(stage.firstChild); }
+function head(g,kicker,title,accent="var(--blue)"){
+  const k=T(92,102,kicker,{size:13,cls:"mono",fill:accent,anchor:"start",weight:700,ls:3});
+  const h=T(92,150,title,{size:28,cls:"disp",fill:"var(--ink)",anchor:"start",weight:600});
+  g.appendChild(k); g.appendChild(h); fadeIn(k,{dy:8,dur:400}); fadeIn(h,{dy:12,dur:600,delay:80});
+  return h;
+}
+function card(g,cx,cy,w,h,{n,title,body,accent="var(--blue)"}){
+  const grp=S("g");
+  grp.appendChild(S("rect",{x:cx-w/2,y:cy-h/2,width:w,height:h,rx:14,fill:"#10141b",stroke:accent,"stroke-width":1.5}));
+  const lx=cx-w/2+20; let ly=cy-h/2+38;
+  if(n){ grp.appendChild(T(lx,ly,n,{size:30,cls:"disp",fill:accent,anchor:"start"})); ly+=30; }
+  grp.appendChild(T(lx,ly,title,{size:15,cls:"mono",fill:"var(--ink)",anchor:"start"})); ly+=24;
+  (body||[]).forEach(b=>{ grp.appendChild(T(lx,ly,b,{size:12,fill:"var(--muted)",anchor:"start"})); ly+=19; });
+  g.appendChild(grp); return grp;
+}
+
+/* ===================================================================== */
+const scenes=[];
+const SC=(title,hold,play)=>scenes.push({title,hold,play});
+
+// 0 -- Title -------------------------------------------------------------
+SC("Title",3000,async({g,cap,live})=>{
+  const halo=S("circle",{cx:640,cy:250,r:60,fill:"url(#halo)"}); g.appendChild(halo);
+  const dot=S("circle",{cx:640,cy:250,r:9,fill:"var(--gold)",filter:"url(#glow)"}); g.appendChild(dot);
+  dot.animate([{opacity:.4},{opacity:1},{opacity:.4}],{duration:2600,iterations:Infinity,easing:"ease-in-out"});
+  pop(dot,{dur:700}); pop(halo,{dur:900});
+  const w=T(640,360,"WARDEN",{size:74,cls:"disp",fill:"var(--ink)",weight:600,ls:12}); g.appendChild(w);
+  await fadeIn(w,{dur:1000,delay:300,dy:18}); if(!live())return;
+  const t=T(640,420,"The action control plane for AI agents",{size:23,fill:"var(--gold)"}); g.appendChild(t);
+  await fadeIn(t,{dy:8}); if(!live())return;
+  const s=T(640,464,"Give an AI agent real power -- and still be able to prove what it did.",{size:15,fill:"var(--muted)",cls:"mono"}); g.appendChild(s);
+  fadeIn(s,{dy:6});
+  cap(`In the next five minutes: what Warden is, how it works, and why agents can't reach production without something like it.`);
+});
+
+// 1 -- The shift ---------------------------------------------------------
+SC("The shift",3000,async({g,cap,live})=>{
+  head(g,"THE SHIFT","AI agents just went from copilots to actors.","var(--amber)");
+  const co=box(360,350,250,96,"copilot",{stroke:"var(--blue)",sub:"suggests -- you act"});
+  g.appendChild(co); await pop(co); if(!live())return;
+  const arrow=link(rightOf(co),[770,350],{color:"var(--amber)",width:2.6}); g.appendChild(arrow); await drawOn(arrow,{dur:600}); if(!live())return;
+  const ac=box(940,350,250,96,"actor",{stroke:"var(--red)",sub:"moves money, changes infra"});
+  g.appendChild(ac); await pop(ac); if(!live())return;
+  const t=box(640,510,540,54,"the constraint is no longer capability -- it's TRUST",{stroke:"var(--gold)",fill:"#1d1808",size:16}); g.appendChild(t);
+  await pop(t,{dur:500});
+  cap(`The instant an agent can take real actions, the question that blocks production isn't "can it?" -- it's <span class="g">"can we trust and prove what it did?"</span>`);
+});
+
+// 2 -- The question ------------------------------------------------------
+SC("The question",2800,async({g,cap,live})=>{
+  const agent=box(360,330,200,74,"agent",{stroke:"var(--blue)"}); g.appendChild(agent); await pop(agent); if(!live())return;
+  const ln=link(rightOf(agent),[700,330],{color:"var(--teal)",width:2.4}); g.appendChild(ln); await drawOn(ln,{dur:500}); if(!live())return;
+  const act=box(900,330,300,82,"transfer_funds",{stroke:"var(--teal)",sub:"$9,800  ->  account:456"}); g.appendChild(act); await pop(act); if(!live())return;
+  cap(`An agent just moved <span class="g">$9,800</span> on its own. The call succeeded. The logs look clean.`);
+  await wait(1400); if(!live())return;
+  const q=T(640,500,"Who is accountable -- and can you prove it?",{size:30,cls:"disp",fill:"var(--gold)"}); g.appendChild(q);
+  await fadeIn(q,{dy:12,dur:700});
+  cap(`And yet the one question that actually matters usually has no answer: <b>who is accountable, and can you prove it?</b>`);
+});
+
+// 3 -- What Warden is ----------------------------------------------------
+SC("What Warden is",3400,async({g,cap,live})=>{
+  head(g,"THE IDEA","A drop-in brake and flight recorder on every action.","var(--gold)");
+  const agent=box(230,340,170,76,"agent",{stroke:"var(--blue)"});
+  const W=box(640,340,230,110,"WARDEN",{stroke:"var(--gold)",size:19,sub:"verify -> policy -> record"}); W.querySelector("rect").setAttribute("fill","#0f1219");
+  const tool=box(1050,340,170,76,"tool",{stroke:"var(--teal)"});
+  g.appendChild(agent); g.appendChild(W); g.appendChild(tool);
+  await Promise.all([pop(agent),pop(W,{delay:150}),pop(tool,{delay:300})]); if(!live())return;
+  const l1=link(rightOf(agent),leftOf(W),{color:"#3a4150"}); const l2=link(rightOf(W),leftOf(tool),{color:"#3a4150"});
+  g.appendChild(l1); g.appendChild(l2); await Promise.all([drawOn(l1,{dur:400}),drawOn(l2,{dur:400})]); if(!live())return;
+  const outs=[["ALLOW","var(--green)",430],["BLOCK","var(--red)",640],["HOLD","var(--amber)",850]];
+  for(const [l,c,x] of outs){ const b=box(x,500,180,50,l,{stroke:c,size:16}); g.appendChild(b); const p=link(botOf(W),[x,475],{color:c,width:1.6}); g.appendChild(p); drawOn(p,{dur:300}); pop(b,{dur:340}); await wait(200); if(!live())return; }
+  cap(`Warden is a proxy that sits on the action boundary. On every call it verifies a signed identity, applies policy, and records the outcome -- <span class="gr">allow</span>, <span class="r">block</span>, or <span class="am">hold for a human</span>. No agent code change.`);
+});
+
+// 4 -- Two boundaries ----------------------------------------------------
+SC("Two boundaries",3000,async({g,cap,live})=>{
+  head(g,"WHERE IT SITS","Every action crosses one of two boundaries.","var(--blue)");
+  const agent=box(640,350,180,84,"agent",{stroke:"var(--blue)"}); g.appendChild(agent); await pop(agent); if(!live())return;
+  const tools=box(1050,350,190,74,"tools & data",{stroke:"var(--teal)",sub:"MCP"});
+  const peer=box(230,350,190,74,"another agent",{stroke:"var(--purple)",sub:"A2A / handoff"});
+  g.appendChild(tools); g.appendChild(peer);
+  const l1=link(rightOf(agent),leftOf(tools),{color:"var(--teal)",width:2.4});
+  const l2=link(leftOf(agent),rightOf(peer),{color:"var(--purple)",width:2.4});
+  g.appendChild(l1); g.appendChild(l2);
+  await Promise.all([pop(tools),pop(peer),drawOn(l1,{dur:450}),drawOn(l2,{dur:450})]); if(!live())return;
+  const W=box(640,500,320,54,"WARDEN governs both",{stroke:"var(--gold)",fill:"#1d1808",size:15}); g.appendChild(W);
+  const u=link(topOf(W),botOf(agent),{color:"var(--gold)",dash:true,arrow:false}); g.appendChild(u); drawOn(u,{dur:300});
+  await pop(W,{dur:500});
+  cap(`The tool boundary, over <span class="t">MCP</span>. And the agent-to-agent boundary, over <span class="p">A2A</span>. Warden sits on both -- one enforcement point for everything an agent does.`);
+});
+
+// 5 -- Accountability is a chain ----------------------------------------
+SC("Accountability is a chain",3200,async({g,cap,live})=>{
+  head(g,"PRINCIPLE 1","Accountability is a chain, not a name.","var(--gold)");
+  const Y=330;
+  const nodes=[
+    box(180,Y,170,66,"human:alice",{stroke:"var(--gold)",fill:"#1d1808",sub:"accountable"}),
+    box(430,Y,160,66,"service",{stroke:"var(--blue)"}),
+    box(660,Y,170,66,"agent",{stroke:"var(--blue)"}),
+    box(890,Y,150,66,"action",{stroke:"var(--teal)"}),
+  ];
+  for(let i=0;i<nodes.length;i++){ g.appendChild(nodes[i]); await pop(nodes[i],{dur:340});
+    if(i<nodes.length-1){ const ln=link(rightOf(nodes[i]),[nodes[i+1]._c.cx-nodes[i+1]._c.w/2,Y],{color:"#3a4150"}); g.appendChild(ln); await drawOn(ln,{dur:280}); } if(!live())return; }
+  const trace=S("path",{d:`M 890 ${Y+55} L 890 ${Y+85} L 180 ${Y+85} L 180 ${Y+40}`,stroke:"var(--gold)","stroke-width":2.6,fill:"none","stroke-linecap":"round","marker-end":"url(#ah)"}); g.appendChild(trace);
+  await drawOn(trace,{dur:1000}); if(!live())return; pulse(nodes[0],{scale:1.12});
+  const fc=T(640,500,"no named human  ->  fail closed",{size:18,cls:"mono",fill:"var(--red)"}); g.appendChild(fc); await fadeIn(fc,{dy:10});
+  cap(`The principal isn't a name -- it's a delegation chain, carried in a signed token. Every action traces back to a <span class="g">named, accountable human.</span> If it can't, Warden <span class="r">fails closed.</span>`);
+});
+
+// 6 -- Authority only narrows -------------------------------------------
+SC("Authority only narrows",3200,async({g,cap,live})=>{
+  head(g,"PRINCIPLE 2","An agent can never exceed its human.","var(--purple)");
+  const cy=350;
+  const c1=S("circle",{cx:520,cy,r:150,fill:"rgba(255,209,102,.07)",stroke:"var(--gold)","stroke-width":1.6});
+  const c2=S("circle",{cx:660,cy,r:120,fill:"rgba(94,200,232,.07)",stroke:"var(--blue)","stroke-width":1.6});
+  const c3=S("circle",{cx:600,cy:cy+55,r:95,fill:"rgba(82,214,192,.07)",stroke:"var(--teal)","stroke-width":1.6});
+  g.appendChild(c1); g.appendChild(c2); g.appendChild(c3);
+  g.appendChild(T(430,cy-130,"human's permissions",{size:12.5,cls:"mono",fill:"var(--gold)"}));
+  g.appendChild(T(770,cy-100,"agent's grant",{size:12.5,cls:"mono",fill:"var(--blue)"}));
+  g.appendChild(T(600,cy+165,"live guardrails",{size:12.5,cls:"mono",fill:"var(--teal)"}));
+  await Promise.all([pop(c1,{dur:600}),pop(c2,{dur:600,delay:180}),pop(c3,{dur:600,delay:360})]); if(!live())return;
+  await Promise.all([anim(c1,[{r:150},{r:110}],{duration:800}),anim(c2,[{r:120},{r:100}],{duration:800}),anim(c3,[{r:95},{r:85}],{duration:800})]); if(!live())return;
+  const eff=S("circle",{cx:590,cy:cy+20,r:40,fill:"rgba(110,231,168,.18)",stroke:"var(--green)","stroke-width":2,filter:"url(#glow)"}); g.appendChild(eff); await pop(eff,{dur:600}); if(!live())return;
+  g.appendChild(T(590,cy+20,"effective",{size:13,cls:"mono",fill:"var(--green)"}));
+  g.appendChild(T(960,320,"RBAC - ABAC - ReBAC",{size:14,cls:"mono",fill:"var(--purple)"}));
+  g.appendChild(T(960,348,"role - attributes - relationship",{size:11.5,cls:"mono",fill:"var(--muted)"}));
+  cap(`Authority is the <b>intersection</b> of what the human may do, what the agent was granted, and the live guardrails -- checked with role, attribute, and relationship rules. It only ever narrows.`);
+});
+
+// 7 -- The decision ------------------------------------------------------
+SC("The decision",3000,async({g,cap,live})=>{
+  head(g,"EVERY CALL","Runs the same gauntlet. Deny overrides.","var(--blue)");
+  const gates=["accountable human?","in scope?","role & relationship?","conditions hold?","within budget?","needs approval?"];
+  const x0=430, w=430, top=210, gap=52;
+  gates.forEach((t,i)=>{ const y=top+i*gap; const gg=S("g");
+    gg.appendChild(S("rect",{x:x0,y:y-18,width:w,height:36,rx:8,fill:"#11161d",stroke:"#2c3445","stroke-width":1.3}));
+    gg.appendChild(T(x0+16,y,t,{size:14,cls:"mono",fill:"var(--ink)",anchor:"start"}));
+    g.appendChild(gg); fadeIn(gg,{dy:6,dur:240,delay:i*70}); gates[i]={g:gg,y}; });
+  await wait(700); if(!live())return;
+  const ball=S("circle",{cx:x0+w+50,cy:top-40,r:12,fill:"var(--blue)",filter:"url(#glow)"}); g.appendChild(ball); await pop(ball); if(!live())return;
+  for(let i=0;i<gates.length;i++){
+    await anim(ball,[{},{transform:`translate(${(x0+w/2)-(x0+w+50)}px,${gates[i].y-(top-40)}px)`}],{duration:i?220:360});
+    ball.style.transform=`translate(${(x0+w/2)-(x0+w+50)}px,${gates[i].y-(top-40)}px)`;
+    gates[i].g.querySelector("rect").animate([{},{stroke:"#6ee7a8"},{}],{duration:380});
+    const ok=T(x0+w+14,gates[i].y,"ok",{size:14,fill:"var(--green)",cls:"mono",anchor:"start"}); g.appendChild(ok); pop(ok,{dur:220});
+    if(!live())return; await wait(60);
+  }
+  const od=S("g");
+  od.appendChild(T(170,300,"deny",{size:20,fill:"var(--red)",cls:"mono",weight:700}));
+  od.appendChild(T(170,326,"> approval",{size:15,fill:"var(--amber)",cls:"mono"}));
+  od.appendChild(T(170,350,"> allow",{size:15,fill:"var(--green)",cls:"mono"}));
+  g.appendChild(od); fadeIn(od,{dx:-12,dy:0});
+  cap(`Every call runs a fixed sequence of checks. If any one says stop, the call stops -- <span class="r">deny</span> beats <span class="am">approval</span> beats <span class="gr">allow</span>. And the order itself is recorded.`);
+});
+
+// 8 -- Evidence ----------------------------------------------------------
+SC("Tamper-evident evidence",3200,async({g,cap,live})=>{
+  head(g,"PRINCIPLE 3","The record can't be quietly rewritten.","var(--green)");
+  const blocks=[]; const bx=210, by=340, bw=200, bh=84, gp=60;
+  for(let i=0;i<3;i++){ const x=bx+i*(bw+gp)+bw/2;
+    const b=box(x,by,bw,bh,"#"+(1041+i),{stroke:"var(--green)",size:14,sub:"accountable: alice"}); g.appendChild(b); blocks.push(b);
+    await pop(b,{dur:320}); if(i>0){ const cl=link(rightOf(blocks[i-1]),leftOf(b),{color:"var(--green)",width:2}); g.appendChild(cl); drawOn(cl,{dur:240}); b._in=cl; } if(!live())return; }
+  const anchor=box(1030,340,150,84,"ES256 anchor",{stroke:"var(--gold)",fill:"#1d1808",size:13,sub:"signed checkpoint"}); g.appendChild(anchor);
+  const al=link(rightOf(blocks[2]),leftOf(anchor),{color:"var(--gold)"}); g.appendChild(al);
+  await Promise.all([pop(anchor),drawOn(al,{dur:300})]); if(!live())return;
+  cap(`Every decision is hash-chained, with the accountable human folded into the hash, and checkpointed by a signed anchor.`);
+  await wait(1300); if(!live())return;
+  const t=blocks[1].querySelectorAll("text")[1]; t.textContent="accountable: mallory"; t.setAttribute("fill","var(--red)");
+  blocks[1].querySelector("rect").animate([{},{stroke:"#ff6f6f"},{stroke:"#ff6f6f"}],{duration:500,fill:"forwards"});
+  blocks[2]._in.setAttribute("stroke","var(--red)"); blocks[2]._in.animate([{opacity:1},{opacity:.2},{opacity:1}],{duration:500,iterations:3}); pop(t,{dur:360});
+  cap(`Change one field -- alice to mallory -- and the chain breaks. Roll the whole log back, and the signed anchor catches it. It's the <b>black-box recorder</b> a regulator can trust.`);
+});
+
+// 9 -- Standards-native --------------------------------------------------
+SC("Standards, not glue",3200,async({g,cap,live})=>{
+  head(g,"PRINCIPLE 4","It speaks the standards you already run.","var(--teal)");
+  const W=box(640,330,220,90,"WARDEN",{stroke:"var(--gold)",size:18}); g.appendChild(W); await pop(W); if(!live())return;
+  const idin=box(250,330,250,70,"your IdP",{stroke:"var(--blue)",sub:"identity carried, not rebuilt"}); g.appendChild(idin);
+  const li=link(rightOf(idin),leftOf(W),{color:"var(--blue)",width:2}); g.appendChild(li);
+  await Promise.all([pop(idin),drawOn(li,{dur:400})]); if(!live())return;
+  const outs=[["OCSF -> SIEM",210],["CAEP signals",280],["OpenTelemetry",350],["AuthZEN",420]];
+  let i=0;
+  for(const [l,y] of outs){ const ch=chip(1010,y,l,{color:"var(--teal)",w:230,h:44}); g.appendChild(ch);
+    const p=link(rightOf(W),leftOf(ch),{color:"var(--teal)",width:1.5}); g.appendChild(p); drawOn(p,{dur:300}); pop(ch); i++; await wait(200); if(!live())return; }
+  cap(`Warden invents no formats. Your identity provider mints the token; evidence leaves as <span class="t">OCSF, CAEP, OpenTelemetry, AuthZEN.</span> Adopting it is conformance, not glue.`);
+});
+
+// 10 -- Every platform ---------------------------------------------------
+SC("Fits every platform",3200,async({g,cap,live})=>{
+  head(g,"ONE BUILD","The token is the only integration point.","var(--blue)");
+  const W=box(640,350,220,90,"WARDEN",{stroke:"var(--gold)",size:18,sub:"one build, every cloud"}); W.querySelector("rect").setAttribute("fill","#0f1219");
+  g.appendChild(W); await pop(W); if(!live())return;
+  const plats=[["Databricks",250,240],["Google Vertex",1030,240],["AWS AgentCore",250,460],["LangGraph",1030,460]];
+  for(const [l,x,y] of plats){ const b=box(x,y,220,56,l,{stroke:"var(--blue)",size:13,sub:"mints the token"}); g.appendChild(b);
+    const p=link([x,y],[640,350],{color:"var(--gold)",width:1.6,dash:true}); g.insertBefore(p,b);
+    drawOn(p,{dur:350}); pop(b,{dur:340}); await wait(240); if(!live())return; }
+  cap(`Every platform already has an identity system. Each one just mints a Warden token -- so a <b>single build</b> governs Databricks, Google, AWS and open-source frameworks alike. No lock-in.`);
+});
+
+// 11 -- Fail closed ------------------------------------------------------
+SC("Built to fail closed",3600,async({g,cap,live})=>{
+  head(g,"THE GUARANTEE","When anything fails, the answer is 'deny'.","var(--red)");
+  const deps=["no accountable identity","expired token","forged signature","IdP unreachable","revocation feed stale","control plane down","policy reload fails","evidence sink down","upstream crash"];
+  const verdict=box(970,360,220,110,"DENY",{stroke:"var(--red)",fill:"#221316",size:28,sub:"and RECORD"});
+  const x0=170; let y=215;
+  for(let i=0;i<deps.length;i++){ const c=chip(x0+150,y,deps[i],{color:"var(--red)",w:300,h:36}); g.appendChild(c);
+    const p=link([x0+300,y],[leftOf(verdict)[0],360],{color:"#5a2730",width:1.3}); g.insertBefore(p,c);
+    drawOn(p,{dur:280}); fadeIn(c,{dx:-10,dy:0,dur:280}); y+=44; await wait(140); if(!live())return; }
+  g.appendChild(verdict); await pop(verdict,{dur:600}); if(!live())return; pulse(verdict,{scale:1.08});
+  cap(`The agent it protects is the adversary it assumes. So every dependency failure lands in the same place: <span class="r">deny, and record.</span> The worst case is never "allow silently."`);
+});
+
+// 12 -- Why it matters ---------------------------------------------------
+SC("Why it matters",3400,async({g,cap,live})=>{
+  head(g,"THE PAYOFF","What this unlocks.","var(--gold)");
+  const items=[
+    ["Ship agents faster","Security can finally say yes.","var(--green)"],
+    ["Bounded autonomy","Never exceeds its human.","var(--blue)"],
+    ["Provable accountability","Who acted -- untampered.","var(--gold)"],
+    ["No vendor lock-in","One plane, one standard.","var(--teal)"],
+    ["Real-time kill switch","Revoke token, agent, person.","var(--red)"],
+    ["Regulator-aligned","MAS - EU AI Act.","var(--purple)"],
+  ];
+  const pos=[[330,260],[640,260],[950,260],[330,430],[640,430],[950,430]];
+  for(let i=0;i<items.length;i++){ const [t,s,c]=items[i],[x,y]=pos[i];
+    const k=card(g,x,y,290,120,{title:t,body:[s],accent:c}); pop(k,{dur:340}); await wait(200); if(!live())return; }
+  cap(`Faster to production, bounded, provable, portable, instantly revocable, and aligned to the regulation that's already here.`);
+});
+
+// 13 -- Bottom line ------------------------------------------------------
+SC("The bottom line",4400,async({g,cap,live})=>{
+  const w=T(640,250,"WARDEN",{size:60,cls:"disp",fill:"var(--ink)",weight:600,ls:9}); g.appendChild(w);
+  await fadeIn(w,{dy:18,dur:900}); if(!live())return;
+  const t=T(640,322,"Bound what an agent can do. Prove which human is accountable.",{size:20,cls:"disp",fill:"var(--gold)"}); g.appendChild(t);
+  await fadeIn(t,{dy:10}); if(!live())return;
+  const s=T(640,382,"One open, vendor-neutral control plane -- across every agent platform you run.",{size:15,fill:"var(--muted)",cls:"mono"}); g.appendChild(s);
+  await fadeIn(s,{dy:8}); if(!live())return;
+  const tag=chip(640,470,"bounded autonomy  -  verifiable accountability  -  real-time control",{color:"var(--blue)",w:560,h:50}); g.appendChild(tag);
+  await pop(tag,{dur:600});
+  cap(`That's Warden. The brake and the flight recorder that lets AI agents finally reach production -- with confidence.`);
+});
+
+/* ===================================================================== */
+const RUN={token:0, playing:true, i:0, finished:false};
+const bar=document.getElementById("bar");
+const dotsEl=document.getElementById("dots");
+const slabel=document.getElementById("slabel");
+const playBtn=document.getElementById("play");
+scenes.forEach((s,i)=>{ const d=document.createElement("button"); d.className="dot"; d.title=s.title; d.onclick=()=>go(i); dotsEl.appendChild(d); s._dot=d; });
+function chrome(i){
+  bar.style.width=((i)/(scenes.length-1)*100)+"%";
+  chipEl.innerHTML=`<b>${String(i+1).padStart(2,"0")}</b> / ${scenes.length} &middot; ${scenes[i].title}`;
+  slabel.innerHTML=`<b>${scenes[i].title}</b>`;
+  scenes.forEach((s,j)=>s._dot.classList.toggle("on",j===i));
+}
+function setPlayIcon(){ playBtn.innerHTML = RUN.playing ? "&#10073;&#10073;" : "&#9654;"; }
+async function go(i){
+  i=Math.max(0,Math.min(scenes.length-1,i));
+  const t=++RUN.token; RUN.i=i; RUN.finished=false;
+  clearStage(); setCap(""); chrome(i);
+  const live=()=>t===RUN.token; const cap=html=>{ if(live()) setCap(html); };
+  try{ await scenes[i].play({g:stage,cap,live}); }catch(e){ console.warn(e); }
+  if(!live()) return;
+  RUN.finished=true;
+  if(RUN.playing){ await wait(scenes[i].hold||1600); if(live() && RUN.playing){ if(i<scenes.length-1) go(i+1); else { RUN.playing=false; setPlayIcon(); } } }
+}
+function setPlaying(p){ RUN.playing=p; setPlayIcon(); if(p && RUN.finished){ if(RUN.i<scenes.length-1) go(RUN.i+1); else go(RUN.i); } }
+document.getElementById("next").onclick=()=>go(RUN.i+1);
+document.getElementById("prev").onclick=()=>go(RUN.i-1);
+document.getElementById("replay").onclick=()=>go(RUN.i);
+playBtn.onclick=()=>setPlaying(!RUN.playing);
+document.getElementById("stage").onclick=()=>go(RUN.i+1);
+document.addEventListener("keydown",e=>{
+  if(e.key===" "){e.preventDefault(); setPlaying(!RUN.playing);}
+  else if(e.key==="ArrowRight") go(RUN.i+1);
+  else if(e.key==="ArrowLeft") go(RUN.i-1);
+  else if(e.key==="r"||e.key==="R") go(RUN.i);
+  else if(e.key==="Home") go(0);
+});
+setPlayIcon(); go(0);
+</script>
+</body>
+</html>
