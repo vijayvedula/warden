@@ -1,0 +1,44 @@
+# Warden policy for Databricks / Unity Catalog UC-function tools.
+# First matching rule wins; otherwise `default`.
+
+default = "deny"
+require_identity = true    # fail closed: reject any call without a verified token
+
+# Reads are allowed for the `analysts` UC group (RBAC). The role is carried in
+# the signed token (mapped from Unity Catalog group membership), not asserted by
+# the agent, so it cannot be spoofed on the wire.
+[[rules]]
+tool = "read_*"
+decision = "allow"
+require_role = "analysts"
+
+# A UC function that queries a specific table is gated on a ReBAC `select`
+# relation to *that* table. The agent may call `query_table` only when the
+# token carries `rel = select@<value of the "table" arg>` — i.e. only on tables
+# the OBO user can actually read in Unity Catalog. Enforced at the action
+# boundary and replay-proof: the tuple lives in the signed token.
+[[rules]]
+tool = "query_table"
+require_relation = { relation = "select", resource_arg = "table" }
+decision = "allow"
+
+# Destructive DDL is never allowed unattended, regardless of grants.
+[[rules]]
+tool = "drop_table"
+decision = "deny"
+reason = "destructive: agents may not drop Unity Catalog tables"
+
+# Example of tightening a rule with a `when` condition (kept as documentation):
+#   restrict reads to the `main` catalog only —
+# [[rules]]
+# tool = "read_*"
+# require_role = "analysts"
+# when = { field = "subject:catalog", op = "eq", value = "main" }
+# decision = "allow"
+#
+#   hold large exports for human approval —
+# [[rules]]
+# tool = "export_table"
+# when = { arg = "row_limit", op = "gt", value = 1000000 }
+# decision = "require_approval"
+# reason = "large export requires human sign-off"

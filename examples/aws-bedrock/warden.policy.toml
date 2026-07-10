@@ -1,0 +1,30 @@
+# Policy for the AWS Bedrock AgentCore example. First matching rule wins;
+# else `default`. Every tools/call is gated against these rules on the MCP path.
+
+default = "deny"
+
+# No action runs without a verified identity (a named human behind the agent).
+# In this example the human comes from the STS AssumeRole session -> token `sub`.
+require_identity = true
+
+# Reads are allowed for the assumed analyst IAM role (RBAC on `roles`, which the
+# adapter fills from the STS-assumed IAM role ARN).
+[[rules]]
+tool = "read_*"
+decision = "allow"
+require_role = "arn:aws:iam::111122223333:role/analyst"
+
+# High-value side effects wait for a human. Condition is on a tool argument:
+# only funds transfers over $1000 need pre-authorization (warden approve <id>).
+[[rules]]
+tool = "wire_funds"
+when = { arg = "amount", op = "gt", value = 1000 }
+decision = "require_approval"
+reason = "high-value transfer requires human pre-authorization"
+
+# ABAC keyed on an STS session tag. `session_tags = {team = "research"}` maps to
+# `attrs`, addressable as `subject:team`. Research-team sessions may read.
+[[rules]]
+tool = "read_*"
+when = { field = "subject:team", op = "eq", value = "research" }
+decision = "allow"

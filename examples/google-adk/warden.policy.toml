@@ -1,0 +1,36 @@
+# Warden policy for the Google ADK / Vertex AI Agent Engine example.
+# First matching rule wins; otherwise `default`. Identity is mandatory here:
+# every action must tie back to a named IAM principal (the accountable human
+# behind the service account).
+
+default = "deny"
+require_identity = true
+
+# Reads are allowed for principals holding the BigQuery dataViewer IAM role.
+# The role arrives as an RBAC claim mapped from the service account's IAM binding.
+[[rules]]
+tool = "read_*"
+decision = "allow"
+require_role = "roles/bigquery.dataViewer"
+
+# Dataset queries are gated on a ReBAC relationship: the token must carry a
+# `dataViewer` relation to the exact dataset named in the call's `dataset` arg
+# (resource-level IAM binding -> rel tuple). No tuple, no query.
+[[rules]]
+tool = "query_dataset"
+decision = "allow"
+require_relation = { relation = "dataViewer", resource_arg = "dataset" }
+
+# Optional ABAC tightening: only within the BigQuery resource type. The attr is
+# mapped from an IAM condition (iam_conditions -> attrs).
+[[rules]]
+tool = "describe_dataset"
+decision = "allow"
+require_role = "roles/bigquery.dataViewer"
+when = { field = "subject:resource.type", op = "eq", value = "bigquery" }
+
+# Destructive operations are never allowed unattended, regardless of role.
+[[rules]]
+tool = "delete_*"
+decision = "deny"
+reason = "destructive: agents may not delete datasets or tables"

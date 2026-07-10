@@ -1,0 +1,58 @@
+# Warden policy -- decide what agents may do.
+# Decisions: "allow", "deny", "require_approval". First matching rule wins;
+# otherwise `default` applies.
+
+default = "allow"
+
+# Accountability mode. When true, a call with no verified identity token is
+# denied (fail closed). Leave off for the no-token / demo flow. See
+# docs/accountable-authorization.md.
+require_identity = false
+
+# --- Identity-aware example (active only with `require_identity = true` and a
+# --- token supplied via `warden proxy --token`). Composes the three models:
+#   require_role      (RBAC)  -- principal must hold the role
+#   require_relation  (ReBAC) -- principal must have the relationship to the
+#                               resource named in the given arg
+#   when[...]         (ABAC)  -- conditions over arg:/subject:/env: fields
+# [[rules]]
+# tool = "transfer_funds"
+# require_role = "ops.reconciler"
+# require_relation = { relation = "manages", resource_arg = "account_id" }
+# when = [
+#   { field = "arg:amount",           op = "lt", value = 10000 },
+#   { field = "subject:jurisdiction", op = "eq", value = "SG" },
+#   { field = "env:hour",             op = "lt", value = 18 },
+# ]
+# decision = "allow"
+
+# Destructive infrastructure actions are never allowed unattended.
+[[rules]]
+tool = "delete_database"
+decision = "deny"
+reason = "destructive: agents may not drop databases"
+
+# Money movement above a threshold needs a human.
+[[rules]]
+tool = "wire_funds"
+when = { arg = "amount", op = "gt", value = 1000 }
+decision = "require_approval"
+reason = "financial action over $1000 requires human approval"
+
+# Anything that leaves the building gets reviewed.
+[[rules]]
+tool = "send_email"
+decision = "require_approval"
+reason = "outbound email requires human approval"
+
+# Allow file writes, but cap how many an agent can do per run (budget).
+[[rules]]
+tool = "write_file"
+decision = "allow"
+max_per_run = 20
+
+# Example wildcard: hold any tool whose name starts with "admin_".
+[[rules]]
+tool = "admin_*"
+decision = "require_approval"
+reason = "administrative tools require approval"

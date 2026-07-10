@@ -1,0 +1,31 @@
+# Policy for the Azure AI Foundry Agent Service example. First matching rule
+# wins; else `default`. Every call must carry a verified Entra-minted identity.
+
+default = "deny"
+require_identity = true
+
+# Reads are allowed only for the Entra `Analyst` app role (RBAC).
+[[rules]]
+tool = "read_*"
+decision = "allow"
+require_role = "Analyst"
+
+# Querying reports is gated on an Azure RBAC `reader` relation to the exact
+# resource the call targets (ReBAC): the token must carry reader@<value of the
+# call's "resource" argument>, e.g. reader@storage:reports.
+[[rules]]
+tool = "query_reports"
+require_relation = { relation = "reader", resource_arg = "resource" }
+decision = "allow"
+
+# Destructive actions are never allowed unattended.
+[[rules]]
+tool = "delete_*"
+decision = "deny"
+reason = "destructive: agents may not delete resources"
+
+# ABAC example -- constrain a rule to a subject attribute (Entra directory attr):
+# [[rules]]
+# tool = "export_*"
+# when = { field = "subject:tenant", op = "eq", value = "contoso" }
+# decision = "require_approval"

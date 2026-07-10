@@ -1,0 +1,28 @@
+[package]
+name = "warden"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.89"
+description = "An action control plane for AI agents: gate, record, and approve MCP tool calls with a tamper-evident audit chain."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/vijayvedula/warden"
+homepage = "https://github.com/vijayvedula/warden"
+readme = "README.md"
+keywords = ["mcp", "ai-agents", "policy", "audit", "authorization"]
+categories = ["command-line-utilities", "authentication"]
+exclude = ["/docs", "/examples", "/fixtures", "/fuzz", "/sdk", "/.github"]
+
+[[bin]]
+name = "warden"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+hex = "0.4"
+toml = "0.8"
+jsonwebtoken = { version = "10.4.0", default-features = false, features = ["use_pem", "rust_crypto"] }
+libc = "0.2.186"
+base64 = "0.22.1"
+ureq = "3.3.0"

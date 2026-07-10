@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1180" viewBox="0 0 2000 1180">
+  <defs>
+    <style>
+      .title { font: 800 36px 'Segoe UI', Arial, sans-serif; fill:#16243f; }
+      .sub   { font: 400 16px 'Segoe UI', Arial, sans-serif; fill:#51607a; }
+      .zone  { font: 700 14px 'Segoe UI', Arial, sans-serif; fill:#3a4a78; letter-spacing:1px; }
+      .h2    { font: 700 15px 'Segoe UI', Arial, sans-serif; fill:#16243f; }
+      .body  { font: 400 12.5px 'Segoe UI', Arial, sans-serif; fill:#28384f; }
+      .small { font: 400 11.5px 'Segoe UI', Arial, sans-serif; fill:#46566e; }
+      .port  { font: 700 11.5px 'Consolas', monospace; fill:#0f5f57; }
+      .c { text-anchor:middle; dominant-baseline:middle; }
+      .zonebox { fill:#f6f9fc; stroke:#9fb0cf; stroke-width:1.8; stroke-dasharray:10 6; }
+      .agent { fill:#cfe3b4; stroke:#7f9b66; stroke-width:1.6; }
+      .warden{ fill:#dfe4f3; stroke:#2d3a5e; stroke-width:2; }
+      .svc   { fill:#dde7f3; stroke:#41586b; stroke-width:1.6; }
+      .store { fill:#fbe9cf; stroke:#9a6b1e; stroke-width:1.6; }
+      .ext   { fill:#eef2f8; stroke:#5b6c92; stroke-width:1.6; }
+      .fw    { fill:#fbe3e0; stroke:#b5564a; stroke-width:1.6; }
+      .net   { stroke:#16243f; stroke-width:2.2; fill:none; }
+      .tls   { stroke:#0f7d72; stroke-width:2.4; fill:none; }
+      .local { stroke:#7d8aa1; stroke-width:2; fill:none; stroke-dasharray:5 4; }
+    </style>
+    <marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,4 L0,8 z" fill="#16243f"/></marker>
+    <marker id="at" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,4 L0,8 z" fill="#0f7d72"/></marker>
+    <filter id="sh" x="-6%" y="-6%" width="112%" height="120%"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#1b2a4a" flood-opacity="0.15"/></filter>
+  </defs>
+  <rect width="2000" height="1180" fill="#ffffff"/>
+  <text x="55" y="52" class="title">Warden — Network &amp; Deployment Architecture</text>
+  <text x="57" y="80" class="sub">Sidecar topology · trust zones · ports &amp; protocols · TLS at the edge · shared evidence &amp; revocation planes</text>
+
+  <!-- ================= Zone: Agent runtime (sidecar) ================= -->
+  <rect x="40" y="120" width="760" height="470" rx="12" class="zonebox"/>
+  <text x="60" y="146" class="zone">ZONE A · AGENT RUNTIME  (pod / VM / container)</text>
+
+  <rect x="70" y="170" width="320" height="150" rx="10" class="agent" filter="url(#sh)"/>
+  <text x="230" y="198" class="h2 c">Agent process</text>
+  <text x="230" y="224" class="small c">LLM app · planner · MCP client</text>
+  <text x="230" y="248" class="small c">talks to Warden, never directly</text>
+  <text x="230" y="268" class="small c">to tools</text>
+  <rect x="100" y="284" width="260" height="26" rx="5" fill="#fff" stroke="#7f9b66"/><text x="230" y="297" class="small c">untrusted by design</text>
+
+  <rect x="450" y="170" width="320" height="280" rx="10" class="warden" filter="url(#sh)"/>
+  <text x="610" y="198" class="h2 c">Warden sidecar</text>
+  <text x="610" y="222" class="small c">single Rust binary · non-root</text>
+  <rect x="476" y="238" width="268" height="40" rx="6" fill="#fff" stroke="#2d3a5e"/><text x="610" y="253" class="small c">stdio transport (in-process)</text><text x="610" y="269" class="port c">subprocess pipe — no network</text>
+  <rect x="476" y="286" width="268" height="40" rx="6" fill="#fff" stroke="#2d3a5e"/><text x="610" y="301" class="small c">or HTTP transport</text><text x="610" y="317" class="port c">127.0.0.1:8080 (loopback)</text>
+  <rect x="476" y="334" width="268" height="40" rx="6" fill="#fff" stroke="#2d3a5e"/><text x="610" y="349" class="small c">health / metrics</text><text x="610" y="365" class="port c">GET /healthz · /metrics</text>
+  <rect x="476" y="382" width="268" height="52" rx="6" fill="#eef7f2" stroke="#5f7d3f"/><text x="610" y="400" class="small c">verifies signed token · enforces</text><text x="610" y="418" class="small c">policy · holds · audit · revocation</text>
+
+  <!-- agent <-> warden local -->
+  <path d="M390 245 L450 245" class="local" marker-end="url(#a)"/>
+  <text x="396" y="234" class="port">stdio / loopback</text>
+
+  <!-- ================= Zone: Tool / MCP (private subnet) ================= -->
+  <rect x="840" y="120" width="700" height="470" rx="12" class="zonebox"/>
+  <text x="860" y="146" class="zone">ZONE T · TOOL / MCP  (private subnet, VPC)</text>
+
+  <rect x="870" y="180" width="300" height="120" rx="10" class="svc" filter="url(#sh)"/>
+  <text x="1020" y="208" class="h2 c">Upstream MCP server</text>
+  <text x="1020" y="234" class="small c">AgentCore Gateway · UC functions ·</text>
+  <text x="1020" y="254" class="small c">Vertex tools · custom MCP</text>
+  <text x="1020" y="282" class="port c">stdio subprocess  or  https</text>
+
+  <rect x="870" y="330" width="300" height="70" rx="8" class="svc"/><text x="1020" y="355" class="h2 c">DB / Warehouse</text><text x="1020" y="380" class="port c">tcp 5432 / 443</text>
+  <rect x="1200" y="330" width="310" height="70" rx="8" class="svc"/><text x="1355" y="355" class="h2 c">DevOps / Tickets / SaaS</text><text x="1355" y="380" class="port c">https 443</text>
+  <rect x="870" y="420" width="640" height="60" rx="8" class="svc"/><text x="1190" y="445" class="h2 c">RAG / Knowledge services</text><text x="1190" y="467" class="port c">vector store · internal APIs</text>
+
+  <!-- firewall between A and T -->
+  <rect x="806" y="300" width="28" height="120" rx="5" class="fw"/><text x="820" y="360" class="small c" transform="rotate(90 820 360)">egress policy</text>
+
+  <!-- warden -> upstream -->
+  <path d="M744 300 Q800 250 866 235" class="net" marker-end="url(#a)"/>
+  <text x="744" y="280" class="port">forward (allowed only)</text>
+  <!-- upstream -> backends -->
+  <path d="M1020 300 L1020 330" class="net" marker-end="url(#a)"/>
+  <path d="M1100 300 Q1250 315 1320 330" class="net" marker-end="url(#a)"/>
+
+  <!-- ================= Zone: Identity (external) ================= -->
+  <rect x="1580" y="120" width="380" height="210" rx="12" class="zonebox"/>
+  <text x="1600" y="146" class="zone">ZONE I · IDENTITY</text>
+  <rect x="1610" y="170" width="320" height="130" rx="10" class="ext" filter="url(#sh)"/>
+  <text x="1770" y="198" class="h2 c">Identity Provider</text>
+  <text x="1770" y="224" class="small c">AWS STS · Google IAM · Databricks OBO</text>
+  <text x="1770" y="244" class="small c">Azure Entra · Okta / Auth0 (OIDC)</text>
+  <text x="1770" y="270" class="port c">JWKS endpoint — https 443</text>
+  <text x="1770" y="288" class="small c">(or JWKS file mounted)</text>
+
+  <!-- warden -> JWKS (TLS egress) -->
+  <path d="M770 240 Q1200 90 1700 170" class="tls" marker-end="url(#at)"/>
+  <text x="1180" y="96" class="port" fill="#0f7d72">JWKS fetch / verify · TLS 443 (egress)</text>
+
+  <!-- ================= Zone: Evidence & control plane (shared) ================= -->
+  <rect x="40" y="630" width="1500" height="300" rx="12" class="zonebox"/>
+  <text x="60" y="656" class="zone">ZONE E · EVIDENCE &amp; CONTROL PLANE  (shared storage / SecOps)</text>
+
+  <rect x="70" y="680" width="320" height="110" rx="10" class="store" filter="url(#sh)"/>
+  <text x="230" y="708" class="h2 c">Audit + Anchor store</text>
+  <text x="230" y="734" class="small c">audit.jsonl (hash chain, flock)</text>
+  <text x="230" y="754" class="small c">anchor.jsonl (signed checkpoints)</text>
+  <text x="230" y="776" class="port c">→ WORM / S3 Object Lock</text>
+
+  <rect x="420" y="680" width="320" height="110" rx="10" class="store" filter="url(#sh)"/>
+  <text x="580" y="708" class="h2 c">Revocation feed</text>
+  <text x="580" y="734" class="small c">revocations.jsonl (ES256 signed)</text>
+  <text x="580" y="754" class="small c">tailed by every Warden node</text>
+  <text x="580" y="776" class="port c">shared / replicated storage</text>
+
+  <rect x="770" y="680" width="320" height="110" rx="10" class="ext" filter="url(#sh)"/>
+  <text x="930" y="708" class="h2 c">SIEM / SOC · SSF</text>
+  <text x="930" y="734" class="small c">OCSF events · CAEP SETs (signed)</text>
+  <text x="930" y="754" class="small c">Splunk · Sentinel · Chronicle · IdP</text>
+  <text x="930" y="776" class="port c">via Warden sinks</text>
+
+  <rect x="1120" y="680" width="380" height="110" rx="10" class="ext" filter="url(#sh)"/>
+  <text x="1310" y="708" class="h2 c">Admin / SecOps + Secrets</text>
+  <text x="1310" y="734" class="small c">warden pause/resume/revoke · SIGHUP</text>
+  <text x="1310" y="754" class="small c">approver &amp; anchor keys (KMS / secrets)</text>
+  <text x="1310" y="776" class="port c">CI/CD · ITSM · ChatOps approvals</text>
+
+  <text x="70" y="828" class="small">Multi-node: N Warden sidecars tail the same signed revocation feed and write/ship audit to the same WORM/SIEM — one evidence &amp; revocation plane across the fleet.</text>
+  <text x="70" y="852" class="small">Keys: identity verification uses public keys (JWKS); anchor/approval/revocation signing keys live in KMS/secrets and are never co-located with the audit file.</text>
+
+  <!-- warden <-> evidence/control flows -->
+  <path d="M520 450 Q400 560 250 678" class="net" marker-end="url(#a)"/><text x="300" y="560" class="port">append audit / anchor</text>
+  <path d="M580 678 Q580 560 610 452" class="tls" marker-end="url(#at)"/><text x="586" y="600" class="port" fill="#0f7d72">tail revoke feed (signed)</text>
+  <path d="M930 678 Q780 560 660 452" class="net" marker-end="url(#a)"/><text x="690" y="600" class="port">sinks: OCSF · CAEP SET</text>
+  <path d="M1310 678 Q980 520 770 360" class="net" marker-end="url(#a)"/><text x="980" y="560" class="port">pause · revoke · policy · approvals</text>
+
+  <!-- ================= Edge / ingress (HTTP transport only) ================= -->
+  <rect x="1580" y="360" width="380" height="230" rx="12" class="zonebox"/>
+  <text x="1600" y="386" class="zone">ZONE X · EDGE  (HTTP transport only)</text>
+  <rect x="1610" y="410" width="320" height="76" rx="10" class="fw" filter="url(#sh)"/>
+  <text x="1770" y="436" class="h2 c">Front proxy / ingress</text>
+  <text x="1770" y="462" class="small c">TLS termination · mTLS · authN</text>
+  <text x="1770" y="480" class="port c">443 → 127.0.0.1:8080</text>
+  <rect x="1610" y="500" width="320" height="74" rx="10" class="ext"/>
+  <text x="1770" y="524" class="h2 c">Remote MCP clients</text>
+  <text x="1770" y="548" class="small c">when not co-located (gateway mode)</text>
+  <text x="1770" y="566" class="port c">https</text>
+  <path d="M1770 500 L1770 488" class="tls" marker-end="url(#at)"/>
+  <path d="M1610 448 Q900 470 770 360" class="tls" marker-end="url(#at)"/>
+  <text x="1000" y="455" class="port" fill="#0f7d72">(gateway mode) TLS in</text>
+
+  <!-- ================= Notes / posture ================= -->
+  <rect x="40" y="960" width="1920" height="180" rx="10" fill="#f6f9fc" stroke="#cdd8e8" stroke-width="1.4"/>
+  <text x="58" y="986" class="zone">DEPLOYMENT NOTES</text>
+  <text x="58" y="1014" class="body">• <tspan font-weight="700">Sidecar (default):</tspan> Warden co-located with the agent; stdio keeps the agent↔Warden hop off the network entirely. Tools sit in a separate subnet; only Warden egresses to them.</text>
+  <text x="58" y="1040" class="body">• <tspan font-weight="700">Gateway mode:</tspan> one Warden fronts many agents over HTTP; terminate TLS / mTLS at the edge proxy and forward to loopback. Lose surgical per-agent revocation; gain operational simplicity.</text>
+  <text x="58" y="1066" class="body">• <tspan font-weight="700">Trust zones:</tspan> Agent (untrusted) → Warden (enforcement) → Tools (private). Identity is reached read-only (public keys). Signing keys and audit retention live in the control/evidence plane.</text>
+  <text x="58" y="1092" class="body">• <tspan font-weight="700">Egress:</tspan> Warden → JWKS (443) · → tools (subnet) · → SIEM/WORM. Inbound to Warden only on loopback (sidecar) or via the edge proxy (gateway). No inbound admin port — admin acts via the signed feed &amp; control file.</text>
+  <text x="58" y="1118" class="body">• <tspan font-weight="700">Sinks:</tspan> fail-safe sinks tail the audit WAL and ship OCSF/CAEP off the hot path (retry, replay); a <tspan font-weight="700">blocking</tspan> sink holds the action until evidence is acked — fail-closed.</text>
+</svg>

@@ -1,0 +1,38 @@
+# Rust build artifacts
+/target
+**/*.rs.bk
+*.pdb
+
+# Local Warden runtime state (audit chains, approvals, control files)
+/.warden/
+/.warden-demo/
+**/.warden/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local env / secrets (never commit real keys)
+.env
+*.local
+
+# OS / editor cruft
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Non-public docs: rendered explainers / voiceover / TTS media + fundraising
+# material. Kept locally, excluded from the public repo.
+/docs/explainers/
+/docs/warden-seed-deck.md
+/docs/warden-deck.html

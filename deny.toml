@@ -1,0 +1,45 @@
+# cargo-deny configuration -- supply-chain policy for the dependency tree.
+# Run locally: cargo deny check
+
+[advisories]
+# Fail on any RUSTSEC advisory (vulnerabilities, unmaintained, yanked).
+version = 2
+yanked = "deny"
+ignore = [
+  # rsa (transitive via jsonwebtoken's rust_crypto provider). Marvin is a
+  # PRIVATE-key timing sidechannel; Warden performs RSA signature VERIFICATION
+  # only (public-key ops) and holds no RSA private keys, so it is not
+  # applicable. Remediation tracked: move jsonwebtoken to the aws_lc_rs provider
+  # (no `rsa` crate; also FIPS-capable). See docs/threat-model.md Sec 11.
+  { id = "RUSTSEC-2023-0071", reason = "verification-only; no RSA private keys held (not applicable)" },
+]
+
+[bans]
+# Catch accidental duplicate versions and risky patterns.
+multiple-versions = "warn"
+wildcards = "deny"          # no `"*"` version requirements
+# Deny crates we never want pulled in (expand as needed).
+deny = []
+
+[licenses]
+# Allowlist of acceptable licenses for a permissively-licensed OSS core.
+version = 2
+allow = [
+  "MIT",
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "Unicode-3.0",
+  "Unicode-DFS-2016",
+  "Zlib",
+  "MPL-2.0",
+  "CC0-1.0",
+]
+confidence-threshold = 0.9
+
+[sources]
+# Only crates.io by default; flag anything from other registries/git.
+unknown-registry = "deny"
+unknown-git = "deny"

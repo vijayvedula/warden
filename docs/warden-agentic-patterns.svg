@@ -1,0 +1,243 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1160" viewBox="0 0 2000 1160">
+  <defs>
+    <style>
+      .title { font: 800 40px Arial, Helvetica, sans-serif; fill:#1f2d3d; }
+      .subtitle { font: 400 17px Arial, Helvetica, sans-serif; fill:#33414f; }
+      .h2 { font: 700 15px Arial, Helvetica, sans-serif; fill:#111; }
+      .txt { font: 400 13px Arial, Helvetica, sans-serif; fill:#111; }
+      .small { font: 400 12px Arial, Helvetica, sans-serif; fill:#111; }
+      .smallw { font: 400 12px Arial, Helvetica, sans-serif; fill:#fff; }
+      .tiny { font: 400 10.5px Arial, Helvetica, sans-serif; fill:#111; }
+      .tinyw { font: 400 10.5px Arial, Helvetica, sans-serif; fill:#dfe5f3; }
+      .std { font: 600 10.5px 'Consolas', monospace; fill:#2d3a5e; }
+      .stdw { font: 600 10.5px 'Consolas', monospace; fill:#bcd0ff; }
+      .txtb { font: 700 13px Arial, Helvetica, sans-serif; fill:#111; }
+      .c { text-anchor: middle; dominant-baseline: middle; }
+      .platform { fill:#eef1f7; stroke:#3a4a78; stroke-width:1.6; }
+      .agent { fill:#c7dda8; stroke:#7f9b66; stroke-width:1.7; }
+      .mcpclient { fill:#dda055; stroke:#7a4d16; stroke-width:2.2; }
+      .server { fill:#dde7f3; stroke:#41586b; stroke-width:1.8; }
+      .rag { fill:#d8d0df; stroke:#6c6175; stroke-width:1.7; }
+      .idp { fill:#fbe9cf; stroke:#9a6b1e; stroke-width:1.6; }
+      .admin { fill:#f3d8d8; stroke:#8b5d5d; stroke-width:1.6; }
+      .warden { fill:#dfe4f3; stroke:#2d3a5e; stroke-width:2.4; }
+      .wardenhdr { fill:#2d3a5e; }
+      .chip { fill:#fff; stroke:#2d3a5e; stroke-width:1.5; }
+      .white { fill:#fff; stroke:#222; stroke-width:1.3; }
+      .tag { fill:#eaf3df; stroke:#7f9b66; stroke-width:1; }
+      .flow { stroke:#111; stroke-width:2.2; fill:none; }
+      .tok { stroke:#9a6b1e; stroke-width:2.2; fill:none; }
+      .adm { stroke:#8b5d5d; stroke-width:2.2; fill:none; }
+    </style>
+    <marker id="a" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L11,4.5 L0,9 z" fill="#111"/></marker>
+    <marker id="atok" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L11,4.5 L0,9 z" fill="#9a6b1e"/></marker>
+    <marker id="aadm" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L11,4.5 L0,9 z" fill="#8b5d5d"/></marker>
+  </defs>
+
+  <rect width="2000" height="1160" fill="#ffffff"/>
+
+  <text x="55" y="56" class="title">Warden Across Agentic Platform Patterns</text>
+  <text x="57" y="88" class="subtitle">Generic, standards-based control-plane view — one plane for platform-native, multi-platform &amp; hybrid agents, on the MCP &amp; agent-to-agent boundaries.</text>
+
+  <!-- ================= LEFT RAIL: identity &amp; trust (standards) ================= -->
+  <rect x="40" y="150" width="250" height="858" class="idp"/>
+  <text x="165" y="176" class="h2 c">Identity &amp; Trust</text>
+  <text x="165" y="195" class="tiny c">standards-based · carried, not looked up</text>
+  <rect x="60" y="212" width="210" height="50" class="white"/><text x="165" y="231" class="small c">OAuth 2.1 / OIDC</text><text x="165" y="250" class="std c">+ discovery (.well-known)</text>
+  <rect x="60" y="272" width="210" height="50" class="white"/><text x="165" y="291" class="small c">Delegation chain</text><text x="165" y="310" class="std c">RFC 8693 Token Exchange</text>
+  <rect x="60" y="332" width="210" height="50" class="white"/><text x="165" y="351" class="small c">Call-context token</text><text x="165" y="370" class="std c">Txn-Tokens · WIMSE</text>
+  <rect x="60" y="392" width="210" height="50" class="white"/><text x="165" y="411" class="small c">Workload identity</text><text x="165" y="430" class="std c">SPIFFE SVID</text>
+  <rect x="60" y="452" width="210" height="50" class="white"/><text x="165" y="471" class="small c">Sender-constrained</text><text x="165" y="490" class="std c">DPoP · mTLS-bound</text>
+  <rect x="60" y="518" width="210" height="132" class="white"/>
+  <text x="165" y="540" class="txtb c">Signed token</text>
+  <text x="72" y="564" class="tiny">sub  = accountable human</text>
+  <text x="72" y="584" class="tiny">act  = service &gt; agent chain</text>
+  <text x="72" y="604" class="tiny">roles · attrs · rel · scope</text>
+  <text x="72" y="624" class="tiny">resource_attrs · sender-bound</text>
+  <text x="72" y="644" class="tiny">exp · jti  (JOSE: JWS/JWE)</text>
+  <text x="165" y="676" class="tiny c">alt formats: SD-JWT · CWT/COSE</text>
+  <text x="165" y="696" class="tiny c">VC / DID (cross-org)</text>
+  <text x="165" y="724" class="tiny c">adapters map native creds → token</text>
+
+  <!-- token arrow into Warden -->
+  <path d="M290 600 L300 600 Q312 600 312 612 L312 700" class="tok" marker-end="url(#atok)"/>
+  <text x="300" y="592" class="tiny" fill="#9a6b1e">signed token</text>
+
+  <!-- ================= RIGHT RAIL: accountability / admin (standards) ================= -->
+  <rect x="1710" y="150" width="250" height="858" class="admin"/>
+  <text x="1835" y="176" class="h2 c">Accountability &amp; Admin</text>
+  <text x="1835" y="195" class="tiny c">governs Warden at runtime</text>
+  <rect x="1730" y="212" width="210" height="50" class="white"/><text x="1835" y="231" class="small c">Accountable human</text><text x="1835" y="250" class="tiny c">named owner per action</text>
+  <rect x="1730" y="272" width="210" height="50" class="white"/><text x="1835" y="291" class="small c">Approvers</text><text x="1835" y="310" class="tiny c">signed per-action assertions</text>
+  <rect x="1730" y="332" width="210" height="50" class="white"/><text x="1835" y="351" class="small c">Revocation feed</text><text x="1835" y="370" class="std c">Shared Signals / CAEP</text>
+  <rect x="1730" y="392" width="210" height="50" class="white"/><text x="1835" y="411" class="small c">Evidence sinks → SIEM/WORM</text><text x="1835" y="430" class="std c">OCSF · CAEP-out · Sigstore</text>
+  <rect x="1730" y="452" width="210" height="50" class="white"/><text x="1835" y="471" class="small c">Telemetry</text><text x="1835" y="490" class="std c">OpenTelemetry</text>
+  <rect x="1730" y="512" width="210" height="50" class="white"/><text x="1835" y="531" class="small c">Control plane</text><text x="1835" y="550" class="tiny c">pause / reload · kill-switch</text>
+  <rect x="1730" y="572" width="210" height="106" class="white"/>
+  <text x="1835" y="594" class="txtb c">Regulatory fit</text>
+  <text x="1742" y="618" class="tiny">NIST AI RMF · ISO/IEC 42001</text>
+  <text x="1742" y="638" class="tiny">sector mandates (finance/health)</text>
+  <text x="1742" y="658" class="tiny">"which human is answerable,</text>
+  <text x="1742" y="674" class="tiny"> and can we prove it?"</text>
+
+  <!-- admin arrows to/from Warden -->
+  <path d="M1710 600 L1700 600 Q1688 600 1688 612 L1688 700" class="adm" marker-end="url(#aadm)"/>
+  <text x="1610" y="592" class="tiny" fill="#8b5d5d">approvals · revocation · control</text>
+  <path d="M1640 730 L1700 730" class="adm" marker-end="url(#aadm)"/>
+  <text x="1648" y="722" class="tiny" fill="#8b5d5d">audit / telemetry out</text>
+
+  <!-- ================= CENTER ================= -->
+  <!-- A. Platform classes (generic) -->
+  <rect x="310" y="150" width="440" height="92" class="platform"/>
+  <text x="530" y="174" class="h2 c">Platform-Native</text>
+  <text x="530" y="196" class="tiny c">one managed agent platform</text>
+  <text x="530" y="214" class="tiny c">identity · orchestration · tools all native</text>
+  <text x="530" y="231" class="tiny c">single-vendor identity domain</text>
+
+  <rect x="780" y="150" width="440" height="92" class="platform"/>
+  <text x="1000" y="174" class="h2 c">Multi-Platform (A2A)</text>
+  <text x="1000" y="196" class="tiny c">agents across vendors / clouds coordinate</text>
+  <text x="1000" y="214" class="tiny c">agent-to-agent handoffs</text>
+  <text x="1000" y="231" class="tiny c">heterogeneous identity systems</text>
+
+  <rect x="1250" y="150" width="440" height="92" class="platform"/>
+  <text x="1470" y="174" class="h2 c">Hybrid</text>
+  <text x="1470" y="196" class="tiny c">managed + self-hosted frameworks</text>
+  <text x="1470" y="214" class="tiny c">+ private RAG + SaaS tools</text>
+  <text x="1470" y="231" class="tiny c">the real enterprise mix</text>
+
+  <!-- B. Agent topology patterns -->
+  <text x="310" y="268" class="h2">Agent topology patterns  (every one funnels through the same two boundaries)</text>
+  <g>
+    <rect x="310" y="282" width="264" height="148" class="agent"/>
+    <text x="442" y="306" class="h2 c">Single Agent + MCP</text>
+    <text x="442" y="332" class="small c">one agent → tools</text>
+    <rect x="360" y="350" width="164" height="30" class="white"/><text x="442" y="365" class="tiny c">agent → MCP servers</text>
+    <rect x="345" y="394" width="194" height="22" class="tag"/><text x="442" y="405" class="tiny c">Native · Hybrid</text>
+  </g>
+  <g>
+    <rect x="589" y="282" width="264" height="148" class="agent"/>
+    <text x="721" y="306" class="h2 c">Multi-Agent, Shared MCP</text>
+    <text x="721" y="332" class="small c">N agents → shared servers</text>
+    <rect x="639" y="350" width="164" height="30" class="white"/><text x="721" y="365" class="tiny c">parallel agents, one tool plane</text>
+    <rect x="624" y="394" width="194" height="22" class="tag"/><text x="721" y="405" class="tiny c">Native · Hybrid</text>
+  </g>
+  <g>
+    <rect x="868" y="282" width="264" height="148" class="agent"/>
+    <text x="1000" y="306" class="h2 c">Hub-and-Spoke</text>
+    <text x="1000" y="332" class="small c">orchestrator → sub-agents/tools</text>
+    <rect x="918" y="350" width="164" height="30" class="white"/><text x="1000" y="365" class="tiny c">coordinator fans out</text>
+    <rect x="903" y="394" width="194" height="22" class="tag"/><text x="1000" y="405" class="tiny c">Native · Multi</text>
+  </g>
+  <g>
+    <rect x="1147" y="282" width="264" height="148" class="agent"/>
+    <text x="1279" y="306" class="h2 c">Chained / A2A</text>
+    <text x="1279" y="332" class="small c">A1 → A2 → A3 handoffs</text>
+    <rect x="1197" y="350" width="164" height="30" class="white"/><text x="1279" y="365" class="tiny c">resource-handle passing</text>
+    <rect x="1182" y="394" width="194" height="22" class="tag"/><text x="1279" y="405" class="tiny c">Multi</text>
+  </g>
+  <g>
+    <rect x="1426" y="282" width="264" height="148" class="agent"/>
+    <text x="1558" y="306" class="h2 c">Hybrid RAG + MCP</text>
+    <text x="1558" y="332" class="small c">agent + retrieval + tools</text>
+    <rect x="1476" y="350" width="164" height="30" class="white"/><text x="1558" y="365" class="tiny c">RAG context + tool calls</text>
+    <rect x="1461" y="394" width="194" height="22" class="tag"/><text x="1558" y="405" class="tiny c">Hybrid</text>
+  </g>
+
+  <!-- funnel arrows into Warden -->
+  <path d="M442 430 L442 458 Q442 472 456 472 L986 472" class="flow"/>
+  <path d="M721 430 L721 472" class="flow"/>
+  <path d="M1000 430 L1000 486" class="flow" marker-end="url(#a)"/>
+  <path d="M1279 430 L1279 472 Q1279 472 1265 472 L1014 472" class="flow"/>
+  <path d="M1558 430 L1558 458 Q1558 472 1544 472 L1014 472" class="flow"/>
+  <text x="1030" y="466" class="tiny">tool call (MCP)  ·  agent handoff (A2A)</text>
+
+  <!-- D. WARDEN control plane -->
+  <rect x="310" y="488" width="1380" height="248" class="warden"/>
+  <rect x="310" y="488" width="1380" height="44" class="wardenhdr"/>
+  <text x="326" y="516" class="h2" fill="#fff" font-size="18">WARDEN — Action Control Plane</text>
+  <text x="760" y="510" class="smallw">MCP proxy + A2A guard</text>
+  <text x="760" y="525" class="smallw">the brake &amp; black-box recorder for agent actions</text>
+  <rect x="1492" y="500" width="184" height="24" rx="12" fill="#1f7a44"/>
+  <text x="1584" y="513" class="c" fill="#fff" font-size="12" font-weight="700">✓ built · tested · clippy-clean</text>
+
+  <!-- interception labels -->
+  <text x="330" y="552" class="txtb">Sits on two boundaries:</text>
+  <text x="500" y="552" class="txt">① agent → tool/resource (MCP)</text>
+  <text x="760" y="552" class="txt">② agent → agent (A2A)</text>
+  <text x="980" y="552" class="tiny">drop-in proxy · no agent code change · token is the only interface</text>
+
+  <!-- component chips: row 1 -->
+  <rect x="330" y="560" width="323" height="54" class="chip"/><text x="491" y="580" class="small c">Verify token</text><text x="491" y="599" class="std c">OIDC · JOSE · DPoP-bound</text>
+  <rect x="669" y="560" width="323" height="54" class="chip"/><text x="830" y="580" class="small c">Policy · RBAC · ABAC · ReBAC</text><text x="830" y="599" class="std c">Cedar/Rego · OpenFGA · AuthZEN</text>
+  <rect x="1008" y="560" width="323" height="54" class="chip"/><text x="1169" y="580" class="small c">Budgets + freshness</text><text x="1169" y="599" class="std c">durable · refresh-or-deny</text>
+  <rect x="1347" y="560" width="323" height="54" class="chip"/><text x="1508" y="580" class="small c">Human approval holds</text><text x="1508" y="599" class="std c">signed per-action assertion</text>
+
+  <!-- component chips: row 2 -->
+  <rect x="330" y="622" width="323" height="54" class="chip"/><text x="491" y="642" class="small c">Audit chain + anchor</text><text x="491" y="661" class="std c">OCSF · Sigstore / Merkle</text>
+  <rect x="669" y="622" width="323" height="54" class="chip"/><text x="830" y="642" class="small c">Revocation</text><text x="830" y="661" class="std c">Shared Signals / CAEP</text>
+  <rect x="1008" y="622" width="323" height="54" class="chip"/><text x="1169" y="642" class="small c">Observability</text><text x="1169" y="661" class="std c">OpenTelemetry</text>
+  <rect x="1347" y="622" width="323" height="54" class="chip"/><text x="1508" y="642" class="small c">Pause / reload · kill-switch</text><text x="1508" y="661" class="std c">control plane</text>
+
+  <!-- decisions strip -->
+  <text x="330" y="704" class="txtb">Decision per action:</text>
+  <text x="490" y="704" class="txt">allow → forward upstream   ·   deny → block before the tool   ·   require_approval → hold for a human   →   recorded to the audit chain (OCSF)</text>
+
+  <!-- Warden -> MCP client -->
+  <path d="M1000 736 L1000 752" class="flow" marker-end="url(#a)"/>
+  <text x="1012" y="746" class="tiny">allowed calls forwarded</text>
+
+  <!-- E. MCP client layer -->
+  <rect x="310" y="754" width="1380" height="58" class="mcpclient"/>
+  <text x="330" y="777" class="h2">MCP Client Layer (in each agent / orchestrator)</text>
+  <text x="330" y="799" class="small">Discovery · Typed tools/resources/prompts · Auth · Rate limits · Retries · (A2A for inter-agent)</text>
+
+  <!-- F. shared MCP servers -->
+  <rect x="310" y="834" width="1380" height="170" fill="#fff" stroke="#222" stroke-width="1.5"/>
+  <text x="328" y="856" class="h2">Tools, Data &amp; Resources  (via MCP servers)</text>
+
+  <path d="M540 812 L540 834" class="flow" marker-end="url(#a)"/>
+  <path d="M820 812 L820 834" class="flow" marker-end="url(#a)"/>
+  <path d="M1100 812 L1100 834" class="flow" marker-end="url(#a)"/>
+  <path d="M1400 812 L1400 834" class="flow" marker-end="url(#a)"/>
+
+  <rect x="335" y="870" width="300" height="120" class="server"/>
+  <text x="352" y="892" class="h2">MCP-DB Server</text>
+  <text x="352" y="913" class="small">Resources: read-only views</text>
+  <text x="352" y="931" class="small">Tools: write via stored actions</text>
+  <rect x="360" y="946" width="250" height="34" class="white"/><text x="485" y="964" class="tiny c">Databases / Warehouse</text>
+
+  <rect x="660" y="870" width="300" height="120" class="server"/>
+  <text x="677" y="892" class="h2">MCP-DevOps Server</text>
+  <text x="677" y="913" class="small">Resources: PRs, issues, diffs</text>
+  <text x="677" y="931" class="small">Tools: open_issue, create_pr</text>
+  <rect x="685" y="946" width="250" height="34" class="white"/><text x="810" y="964" class="tiny c">SCM / CI systems</text>
+
+  <rect x="985" y="870" width="300" height="120" class="server"/>
+  <text x="1002" y="892" class="h2">MCP-ITSM Server</text>
+  <text x="1002" y="913" class="small">Resources: boards, sprints</text>
+  <text x="1002" y="931" class="small">Tools: create_ticket, transition</text>
+  <rect x="1010" y="946" width="250" height="34" class="white"/><text x="1135" y="964" class="tiny c">Ticketing / ITSM</text>
+
+  <rect x="1310" y="870" width="355" height="120" class="rag"/>
+  <text x="1327" y="892" class="h2">RAG / Knowledge · SaaS</text>
+  <text x="1327" y="913" class="small">Resources: vector index, docs</text>
+  <text x="1327" y="931" class="small">retrieve · rerank · SaaS APIs</text>
+  <rect x="1335" y="946" width="305" height="34" class="white"/><text x="1487" y="964" class="tiny c">private RAG · external services</text>
+
+  <!-- ================= LEGEND ================= -->
+  <rect x="40" y="1024" width="1920" height="112" fill="#fff" stroke="#222" stroke-width="1.5"/>
+  <text x="58" y="1046" class="h2">Legend</text>
+  <rect x="58" y="1058" width="26" height="26" class="platform"/><text x="92" y="1071" class="small">Platform class</text>
+  <rect x="210" y="1058" width="26" height="26" class="agent"/><text x="244" y="1071" class="small">Agent / pattern</text>
+  <rect x="380" y="1058" width="26" height="26" class="warden"/><text x="414" y="1071" class="small">Warden control plane</text>
+  <rect x="600" y="1058" width="26" height="26" class="mcpclient"/><text x="634" y="1071" class="small">MCP client</text>
+  <rect x="740" y="1058" width="26" height="26" class="server"/><text x="774" y="1071" class="small">MCP server</text>
+  <rect x="880" y="1058" width="26" height="26" class="idp"/><text x="914" y="1071" class="small">Identity &amp; trust</text>
+  <rect x="1030" y="1058" width="26" height="26" class="admin"/><text x="1064" y="1071" class="small">Accountability / admin</text>
+  <line x1="1240" y1="1071" x2="1295" y2="1071" class="tok" marker-end="url(#atok)"/><text x="1305" y="1075" class="small">signed token in</text>
+  <line x1="1440" y1="1071" x2="1495" y2="1071" class="adm" marker-end="url(#aadm)"/><text x="1505" y="1075" class="small">admin / evidence</text>
+  <line x1="1640" y1="1071" x2="1695" y2="1071" class="flow" marker-end="url(#a)"/><text x="1705" y="1075" class="small">data / control flow</text>
+  <text x="58" y="1100" class="tiny"><tspan font-weight="700" fill="#1f7a44">✓ Implemented in the core (see docs/standards.md):</tspan>  OIDC/OAuth + Token-Exchange (RFC 8693, RFC 9068) with live JWKS &amp; OIDC discovery; sender-bound DPoP (RFC 9449); policy via the engine + AuthZEN PDP endpoint;</text>
+  <text x="58" y="1120" class="tiny">revocation via Shared Signals / CAEP (consumed); evidence &amp; signals shipped out through <tspan font-weight="700">standards-based sinks</tspan> — OCSF→SIEM/lake, CAEP-SET transmitter, signed anchor — with fail-safe (WAL-tail) or blocking (high-assurance) delivery; OpenTelemetry; multi-hop Txn-Tokens across A2A.</text>
+</svg>

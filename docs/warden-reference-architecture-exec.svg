@@ -1,0 +1,200 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1180" viewBox="0 0 2000 1180">
+  <defs>
+    <style>
+      .title   { font: 800 42px 'Segoe UI', Arial, sans-serif; fill:#ffffff; }
+      .tag      { font: 700 14px 'Segoe UI', Arial, sans-serif; fill:#ffffff; letter-spacing:1.5px; }
+      .tagline { font: 400 19px 'Segoe UI', Arial, sans-serif; fill:#d8e2f2; }
+      .sec      { font: 700 14px 'Segoe UI', Arial, sans-serif; fill:#51607a; letter-spacing:2px; }
+      .h        { font: 700 18px 'Segoe UI', Arial, sans-serif; fill:#16243f; }
+      .h2       { font: 700 15px 'Segoe UI', Arial, sans-serif; fill:#16243f; }
+      .hw       { font: 700 22px 'Segoe UI', Arial, sans-serif; fill:#ffffff; }
+      .body     { font: 400 14px 'Segoe UI', Arial, sans-serif; fill:#28384f; }
+      .bodyw    { font: 400 14px 'Segoe UI', Arial, sans-serif; fill:#c9d4ea; }
+      .small    { font: 400 13px 'Segoe UI', Arial, sans-serif; fill:#46566e; }
+      .pill     { font: 600 14px 'Segoe UI', Arial, sans-serif; fill:#16243f; }
+      .c { text-anchor:middle; dominant-baseline:middle; }
+      .cluster  { fill:#f5f8fc; stroke:#cdd8e8; stroke-width:1.5; }
+      .ptile    { fill:#ffffff; stroke:#c6d2e4; stroke-width:1.4; }
+      .warden   { fill:#33417a; }
+      .whdr     { fill:#232e5c; }
+      .pillar   { fill:#ffffff; stroke:#c7cfe6; stroke-width:1.4; }
+      .system   { fill:#e9eff7; stroke:#c6d2e4; stroke-width:1.5; }
+      .rail     { fill:#f4f7fb; stroke:#d3dce8; stroke-width:1.6; }
+      .vcard    { fill:#ffffff; stroke:#dbe3ee; stroke-width:1.4; }
+      .accent   { fill:#11857a; }
+      .flow { stroke:#16243f; stroke-width:2.4; fill:none; }
+      .dash { stroke:#8a97ad; stroke-width:2; fill:none; stroke-dasharray:7 6; }
+    </style>
+    <marker id="a" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L11,4.5 L0,9 z" fill="#16243f"/></marker>
+    <filter id="sh" x="-6%" y="-6%" width="112%" height="120%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#1b2a4a" flood-opacity="0.18"/></filter>
+  </defs>
+
+  <rect width="2000" height="1180" fill="#ffffff"/>
+
+  <!-- ===== Header ===== -->
+  <rect x="0" y="0" width="2000" height="122" fill="#16243f"/>
+  <text x="60" y="56" class="title">Warden — The Action Control Plane for Enterprise Agents</text>
+  <text x="62" y="92" class="tagline">Bounded autonomy, verifiable accountability, and real-time control — across every agent platform you run.</text>
+  <rect x="1612" y="34" width="328" height="54" rx="6" fill="none" stroke="#5b6c92" stroke-width="1.6"/>
+  <text x="1776" y="55" class="tag c">REFERENCE ARCHITECTURE</text>
+  <text x="1776" y="74" class="bodyw c">for CTO · CIO · Enterprise Architecture</text>
+
+  <!-- ===== Problem strip ===== -->
+  <rect x="0" y="122" width="2000" height="50" fill="#eef3f9"/>
+  <text x="60" y="152" class="body">The shift: agents are moving from copilots to <tspan font-weight="700">actors</tspan>. The binding constraint is no longer capability — it is <tspan font-weight="700">trust</tspan>: can you bound what an agent does, and prove which human is accountable?</text>
+
+  <!-- ============================================================= -->
+  <!-- LEFT: architecture column (x 60 .. 1370)                       -->
+  <!-- ============================================================= -->
+
+  <!-- Platforms -->
+  <text x="60" y="212" class="sec">PLATFORMS YOU RUN TODAY</text>
+
+  <!-- cluster: Platform-Native -->
+  <rect x="60" y="226" width="423" height="150" rx="10" class="cluster" filter="url(#sh)"/>
+  <text x="271" y="250" class="h2 c">Platform-Native</text>
+  <rect x="78"  y="266" width="190" height="44" rx="6" class="ptile"/><text x="173" y="288" class="pill c">Amazon Bedrock AgentCore</text>
+  <rect x="276" y="266" width="190" height="44" rx="6" class="ptile"/><text x="371" y="288" class="pill c">Google Vertex Agents</text>
+  <rect x="78"  y="318" width="190" height="44" rx="6" class="ptile"/><text x="173" y="340" class="pill c">Databricks Mosaic AI</text>
+  <rect x="276" y="318" width="190" height="44" rx="6" class="ptile"/><text x="371" y="340" class="pill c">Azure AI Foundry</text>
+
+  <!-- cluster: Multi-Platform -->
+  <rect x="503" y="226" width="364" height="150" rx="10" class="cluster" filter="url(#sh)"/>
+  <text x="685" y="250" class="h2 c">Multi-Platform (A2A)</text>
+  <rect x="521" y="266" width="328" height="44" rx="6" class="ptile"/><text x="685" y="288" class="pill c">Agent-to-Agent protocol</text>
+  <rect x="521" y="318" width="328" height="44" rx="6" class="ptile"/><text x="685" y="340" class="pill c">Cross-cloud / partner agents</text>
+
+  <!-- cluster: Hybrid -->
+  <rect x="887" y="226" width="483" height="150" rx="10" class="cluster" filter="url(#sh)"/>
+  <text x="1128" y="250" class="h2 c">Hybrid</text>
+  <rect x="905"  y="266" width="216" height="44" rx="6" class="ptile"/><text x="1013" y="288" class="pill c">LangGraph</text>
+  <rect x="1129" y="266" width="223" height="44" rx="6" class="ptile"/><text x="1240" y="288" class="pill c">CrewAI / AutoGen</text>
+  <rect x="905"  y="318" width="216" height="44" rx="6" class="ptile"/><text x="1013" y="340" class="pill c">Private RAG / knowledge</text>
+  <rect x="1129" y="318" width="223" height="44" rx="6" class="ptile"/><text x="1240" y="340" class="pill c">SaaS tools &amp; systems</text>
+
+  <!-- Boundary note -->
+  <rect x="60" y="396" width="1310" height="58" rx="8" fill="#fbf4e6" stroke="#e2c98c" stroke-width="1.5"/>
+  <text x="80" y="420" class="h2">Every agent action crosses two boundaries — Warden governs both.</text>
+  <text x="80" y="442" class="small">① Agent → Tools &amp; Data (MCP)        ② Agent → Agent (A2A / handoff)        Drop-in proxy — no agent code change.</text>
+
+  <!-- arrows platforms -> boundary -> warden -->
+  <path d="M715 376 L715 396" class="flow" marker-end="url(#a)"/>
+  <path d="M715 454 L715 486" class="flow" marker-end="url(#a)"/>
+
+  <!-- WARDEN hero -->
+  <rect x="60" y="488" width="1310" height="248" rx="12" class="warden" filter="url(#sh)"/>
+  <rect x="60" y="488" width="1310" height="50" rx="12" class="whdr"/>
+  <rect x="60" y="520" width="1310" height="18" class="whdr"/>
+  <text x="80" y="521" class="hw">WARDEN · Action Control Plane</text>
+  <text x="1350" y="514" text-anchor="end" class="bodyw">vendor-neutral · open audit standard · the brake &amp; black-box recorder</text>
+  <text x="80" y="566" class="bodyw">On every action it verifies the signed identity token, applies policy, and records the outcome — the same way on every platform.</text>
+
+  <!-- 4 pillars -->
+  <rect x="80" y="582" width="305" height="118" rx="8" class="pillar"/>
+  <text x="232" y="608" class="h2 c">Identity &amp; Accountability</text>
+  <text x="232" y="635" class="small c">Every action tied to a</text>
+  <text x="232" y="654" class="small c">named human via a signed</text>
+  <text x="232" y="673" class="small c">delegation chain.</text>
+
+  <rect x="401" y="582" width="305" height="118" rx="8" class="pillar"/>
+  <text x="553" y="608" class="h2 c">Authorization</text>
+  <text x="553" y="635" class="small c">RBAC · ABAC · ReBAC.</text>
+  <text x="553" y="654" class="small c">Least privilege, scoped</text>
+  <text x="553" y="673" class="small c">per action &amp; per resource.</text>
+
+  <rect x="722" y="582" width="305" height="118" rx="8" class="pillar"/>
+  <text x="874" y="608" class="h2 c">Oversight &amp; Control</text>
+  <text x="874" y="635" class="small c">Human pre-approval holds,</text>
+  <text x="874" y="654" class="small c">spend budgets, instant</text>
+  <text x="874" y="673" class="small c">revocation &amp; pause.</text>
+
+  <rect x="1043" y="582" width="305" height="118" rx="8" class="pillar"/>
+  <text x="1195" y="608" class="h2 c">Evidence</text>
+  <text x="1195" y="635" class="small c">Tamper-evident,</text>
+  <text x="1195" y="654" class="small c">regulator-grade audit —</text>
+  <text x="1195" y="673" class="small c">the black-box recorder.</text>
+
+  <text x="715" y="720" class="bodyw c">Decision per action:  ALLOW (forward)  ·  BLOCK (stop before the tool)  ·  HOLD (route to a human)  —  all appended to the audit trail.</text>
+
+  <!-- arrow warden -> systems -->
+  <path d="M715 736 L715 770" class="flow" marker-end="url(#a)"/>
+
+  <!-- Enterprise systems -->
+  <text x="60" y="800" class="sec">YOUR SYSTEMS OF RECORD &amp; ACTION  (reached via MCP)</text>
+  <rect x="60" y="812" width="1310" height="120" rx="10" fill="#ffffff" stroke="#cdd8e8" stroke-width="1.5"/>
+  <rect x="80"  y="832" width="242" height="82" rx="8" class="system"/><text x="201" y="866" class="h2 c">Databases</text><text x="201" y="890" class="small c">Warehouse / SQL</text>
+  <rect x="336" y="832" width="242" height="82" rx="8" class="system"/><text x="457" y="866" class="h2 c">DevOps</text><text x="457" y="890" class="small c">PRs · issues · diffs</text>
+  <rect x="592" y="832" width="242" height="82" rx="8" class="system"/><text x="713" y="866" class="h2 c">Ticketing / ITSM</text><text x="713" y="890" class="small c">ADO · ServiceNow</text>
+  <rect x="848" y="832" width="242" height="82" rx="8" class="system"/><text x="969" y="866" class="h2 c">Knowledge / RAG</text><text x="969" y="890" class="small c">vector index · docs</text>
+  <rect x="1104" y="832" width="244" height="82" rx="8" class="system"/><text x="1226" y="866" class="h2 c">SaaS APIs</text><text x="1226" y="890" class="small c">external services</text>
+
+  <!-- standards-native note -->
+  <text x="60" y="966" class="sec">STANDARDS-NATIVE — DROPS INTO YOUR STACK</text>
+  <rect x="60" y="978" width="1310" height="62" rx="8" fill="#eaf5f3" stroke="#9ed3cb" stroke-width="1.4"/>
+  <text x="80" y="1004" class="body"><tspan font-weight="700">Identity carried, not re-platformed</tspan> — your IdP mints the token (OIDC · OAuth Token-Exchange RFC 8693 · DPoP sender-binding). No identity migration.</text>
+  <text x="80" y="1026" class="small">Speaks the standards you run — <tspan font-weight="700">OCSF</tspan>→SIEM · <tspan font-weight="700">CAEP</tspan> signals (consumed &amp; emitted) · <tspan font-weight="700">OpenTelemetry</tspan> · <tspan font-weight="700">AuthZEN</tspan> — via standards-based sinks (fail-safe, or blocking for high-assurance). Interop, not glue.</text>
+
+  <!-- ============================================================= -->
+  <!-- RIGHT: value rail (x 1400 .. 1940)                             -->
+  <!-- ============================================================= -->
+  <rect x="1400" y="186" width="540" height="854" rx="12" class="rail" filter="url(#sh)"/>
+  <rect x="1400" y="186" width="540" height="48" rx="12" fill="#11857a"/>
+  <rect x="1400" y="214" width="540" height="20" fill="#11857a"/>
+  <text x="1420" y="218" class="hw" font-size="20">Why it matters</text>
+
+  <!-- outcome cards -->
+  <g>
+    <rect x="1420" y="248" width="500" height="80" rx="8" class="vcard"/>
+    <rect x="1420" y="248" width="8" height="80" rx="4" class="accent"/>
+    <text x="1444" y="276" class="h2">Ship agents to production faster</text>
+    <text x="1444" y="302" class="small">Security and risk can finally say “yes” — autonomy is bounded and observable.</text>
+  </g>
+  <g>
+    <rect x="1420" y="340" width="500" height="80" rx="8" class="vcard"/>
+    <rect x="1420" y="340" width="8" height="80" rx="4" class="accent"/>
+    <text x="1444" y="368" class="h2">Bounded autonomy</text>
+    <text x="1444" y="394" class="small">An agent can never exceed the authority of the human it acts for.</text>
+  </g>
+  <g>
+    <rect x="1420" y="432" width="500" height="80" rx="8" class="vcard"/>
+    <rect x="1420" y="432" width="8" height="80" rx="4" class="accent"/>
+    <text x="1444" y="460" class="h2">Regulator-grade evidence</text>
+    <text x="1444" y="486" class="small">Prove who was accountable for every action — and that the record is untampered.</text>
+  </g>
+  <g>
+    <rect x="1420" y="524" width="500" height="80" rx="8" class="vcard"/>
+    <rect x="1420" y="524" width="8" height="80" rx="4" class="accent"/>
+    <text x="1444" y="552" class="h2">No vendor lock-in</text>
+    <text x="1444" y="578" class="small">One control plane and one audit standard across native, multi-platform &amp; hybrid.</text>
+  </g>
+  <g>
+    <rect x="1420" y="616" width="500" height="80" rx="8" class="vcard"/>
+    <rect x="1420" y="616" width="8" height="80" rx="4" class="accent"/>
+    <text x="1444" y="644" class="h2">Real-time kill switch</text>
+    <text x="1444" y="670" class="small">Revoke a token, an agent, or a person instantly — no redeploy.</text>
+  </g>
+
+  <!-- regulatory -->
+  <rect x="1420" y="712" width="500" height="78" rx="8" fill="#eaf5f3" stroke="#9ed3cb" stroke-width="1.4"/>
+  <text x="1444" y="740" class="h2">Regulatory alignment</text>
+  <text x="1444" y="765" class="small">MAS guidance on agentic-AI accountability ·</text>
+  <text x="1444" y="783" class="small">EU AI Act human-oversight obligations.</text>
+
+  <!-- adoption -->
+  <rect x="1420" y="806" width="500" height="106" rx="8" fill="#eef3f9" stroke="#c6d2e4" stroke-width="1.4"/>
+  <text x="1444" y="834" class="h2">Adopt in stages</text>
+  <text x="1444" y="861" class="small"><tspan font-weight="700">Observe</tspan> — drop in, zero behavior change, full visibility.</text>
+  <text x="1444" y="882" class="small"><tspan font-weight="700">Enforce</tspan> — switch on policies, budgets &amp; approval holds.</text>
+  <text x="1444" y="903" class="small"><tspan font-weight="700">Govern</tspan> — audit, revocation &amp; compliance reporting.</text>
+
+  <!-- bottom line -->
+  <rect x="1420" y="928" width="500" height="92" rx="8" fill="#16243f"/>
+  <text x="1444" y="958" class="hw" font-size="17">Bottom line</text>
+  <text x="1444" y="984" class="bodyw" font-size="13">One control plane that lets the enterprise</text>
+  <text x="1444" y="1004" class="bodyw" font-size="13">deploy agents with confidence — on any platform.</text>
+
+  <!-- ===== Footer ===== -->
+  <rect x="0" y="1100" width="2000" height="80" fill="#16243f"/>
+  <text x="60" y="1138" class="hw" font-size="18">One control plane across native, multi-platform, and hybrid agent architectures —</text>
+  <text x="60" y="1164" class="bodyw">enforced on the MCP tool boundary and the agent-to-agent boundary, governed by your identity and your accountability requirements.</text>
+</svg>

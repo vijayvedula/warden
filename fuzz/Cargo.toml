@@ -1,0 +1,44 @@
+[package]
+name = "warden-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+serde_json = "1"
+warden = { path = ".." }
+
+# Keep the fuzz crate out of the parent's build graph.
+[workspace]
+
+[[bin]]
+name = "parse_jsonrpc"
+path = "fuzz_targets/parse_jsonrpc.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "parse_policy"
+path = "fuzz_targets/parse_policy.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "parse_claims"
+path = "fuzz_targets/parse_claims.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "authzen_eval"
+path = "fuzz_targets/authzen_eval.rs"
+test = false
+doc = false
+bench = false

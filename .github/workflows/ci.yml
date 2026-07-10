@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Build
+        run: cargo build --verbose
+      - name: Test (unit + integration)
+        run: cargo test --verbose
+      - name: Smoke (demo + audit verify)
+        run: |
+          ./target/debug/warden demo
+          ./target/debug/warden audit verify --audit .warden-demo/audit.jsonl
+
+  # Python SDK: lint + unit tests + end-to-end conformance against the real
+  # `warden` binary (SDK-built tokens must verify under `warden token verify`).
+  sdk:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build warden (needed for conformance tests)
+        run: cargo build
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install SDK
+        working-directory: sdk/python
+        run: pip install ".[dev]"
+      - name: Lint
+        working-directory: sdk/python
+        run: ruff check .
+      - name: Test (unit + conformance)
+        working-directory: sdk/python
+        env:
+          WARDEN_BIN: ${{ github.workspace }}/target/debug/warden
+        run: pytest -q

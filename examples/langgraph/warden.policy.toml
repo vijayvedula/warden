@@ -1,0 +1,31 @@
+# Policy for the LangGraph example. First matching rule wins; else `default`.
+# Demonstrates the three decisions on the demo tool server.
+
+default = "deny"
+
+# Reads are safe.
+[[rules]]
+tool = "read_*"
+decision = "allow"
+
+# Outbound side effects wait for a human (warden approve <id> --by you).
+[[rules]]
+tool = "create_ticket"
+decision = "require_approval"
+reason = "ticket creation requires human approval"
+
+# Destructive actions are never allowed unattended.
+[[rules]]
+tool = "delete_database"
+decision = "deny"
+reason = "destructive: agents may not drop databases"
+
+# To enforce accountability (a named human behind the agent), set:
+#   require_identity = true
+# and launch warden with a verified token (--token / --jwks-url / --aud).
+# Then add RBAC/ABAC/ReBAC, e.g.:
+# [[rules]]
+# tool = "read_*"
+# require_role = "data.reader"
+# when = { field = "subject:jurisdiction", op = "eq", value = "EU" }
+# decision = "allow"

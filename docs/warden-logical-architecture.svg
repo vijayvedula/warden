@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1180" viewBox="0 0 2000 1180">
+  <defs>
+    <style>
+      .title { font: 800 36px 'Segoe UI', Arial, sans-serif; fill:#16243f; }
+      .sub   { font: 400 16px 'Segoe UI', Arial, sans-serif; fill:#51607a; }
+      .sec   { font: 700 13px 'Segoe UI', Arial, sans-serif; fill:#51607a; letter-spacing:1.5px; }
+      .h2    { font: 700 15px 'Segoe UI', Arial, sans-serif; fill:#16243f; }
+      .mod   { font: 700 14px 'Segoe UI', Arial, sans-serif; fill:#16243f; }
+      .body  { font: 400 12.5px 'Segoe UI', Arial, sans-serif; fill:#28384f; }
+      .small { font: 400 11.5px 'Segoe UI', Arial, sans-serif; fill:#46566e; }
+      .mono  { font: 400 11.5px 'Consolas', monospace; fill:#5a3a12; }
+      .stepn { font: 800 13px 'Segoe UI', Arial, sans-serif; fill:#ffffff; }
+      .c { text-anchor:middle; dominant-baseline:middle; }
+      .agent { fill:#cfe3b4; stroke:#7f9b66; stroke-width:1.6; }
+      .ext   { fill:#eef2f8; stroke:#9aa7bd; stroke-width:1.5; }
+      .core  { fill:#dfe4f3; stroke:#2d3a5e; stroke-width:1.8; }
+      .step  { fill:#2d3a5e; stroke:#1c2747; stroke-width:1.4; }
+      .crypto{ fill:#e7f1da; stroke:#5f7d3f; stroke-width:1.6; }
+      .io    { fill:#dde7f3; stroke:#41586b; stroke-width:1.6; }
+      .store { fill:#fbe9cf; stroke:#9a6b1e; stroke-width:1.5; }
+      .boundary { fill:none; stroke:#6b7891; stroke-width:1.8; stroke-dasharray:9 7; }
+      .flow { stroke:#16243f; stroke-width:2; fill:none; }
+      .thin { stroke:#7d8aa1; stroke-width:1.4; fill:none; }
+    </style>
+    <marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,4 L0,8 z" fill="#16243f"/></marker>
+    <marker id="at" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L9,3.5 L0,7 z" fill="#7d8aa1"/></marker>
+  </defs>
+  <rect width="2000" height="1180" fill="#ffffff"/>
+  <text x="55" y="52" class="title">Warden — Technical Logical Architecture</text>
+  <text x="57" y="80" class="sub">Component &amp; per-action decision-pipeline view · Rust modules named · stores shown · single-binary process</text>
+
+  <!-- Actors -->
+  <text x="60" y="118" class="sec">ACTORS / EXTERNAL</text>
+  <rect x="60" y="128" width="360" height="64" rx="8" class="agent"/><text x="240" y="152" class="h2 c">Agent / MCP client</text><text x="240" y="174" class="small c">sends tools/call · carries signed token</text>
+  <rect x="440" y="128" width="360" height="64" rx="8" class="ext"/><text x="620" y="152" class="h2 c">Identity Provider (JWKS / OIDC)</text><text x="620" y="174" class="small c">issues RFC-8693 token · publishes keys</text>
+  <rect x="820" y="128" width="340" height="64" rx="8" class="ext"/><text x="990" y="152" class="h2 c">Human approver</text><text x="990" y="174" class="small c">warden approve --approver-key (signed)</text>
+  <rect x="1180" y="128" width="340" height="64" rx="8" class="ext"/><text x="1350" y="152" class="h2 c">Admin / SecOps</text><text x="1350" y="174" class="small c">pause · resume · revoke · SIGHUP</text>
+  <rect x="1540" y="128" width="400" height="64" rx="8" class="ext"/><text x="1740" y="152" class="h2 c">Upstream MCP server(s)</text><text x="1740" y="174" class="small c">tools/resources → enterprise backends</text>
+
+  <!-- Process boundary -->
+  <rect x="40" y="210" width="1920" height="700" rx="10" class="boundary"/>
+  <text x="58" y="232" class="sec">WARDEN PROCESS  (single Rust binary)</text>
+
+  <!-- Transport -->
+  <rect x="60" y="246" width="1880" height="70" rx="8" class="io"/>
+  <text x="78" y="272" class="mod">Transport &amp; concurrency  —  main.rs · http.rs</text>
+  <text x="78" y="296" class="body">stdio JSON-RPC loop  |  MCP Streamable-HTTP server (:8080, GET /healthz · /metrics, Mcp-Session-Id)  →  worker thread per request  →  shared Arc&lt;Gateway&gt; (interior-mutable)</text>
+
+  <!-- Center: gateway dispatch pipeline -->
+  <rect x="715" y="338" width="570" height="560" rx="10" class="core"/>
+  <text x="1000" y="362" class="h2 c">Gateway::dispatch  (gateway.rs)</text>
+  <text x="1000" y="381" class="small c">ordered, per-action · fail-closed</text>
+
+  <!-- steps -->
+  <rect x="735" y="394" width="530" height="44" rx="6" class="step"/><circle cx="757" cy="416" r="11" fill="#fff"/><text x="757" y="417" class="c" font-weight="800" fill="#2d3a5e" font-size="12">0</text><text x="784" y="411" class="stepn">maybe_reload</text><text x="784" y="429" class="small" fill="#cdd6ee">SIGHUP → hot-reload policy</text>
+  <rect x="735" y="446" width="530" height="44" rx="6" class="step"/><circle cx="757" cy="468" r="11" fill="#fff"/><text x="757" y="469" class="c" font-weight="800" fill="#2d3a5e" font-size="11">0a</text><text x="784" y="463" class="stepn">check_paused</text><text x="784" y="481" class="small" fill="#cdd6ee">admin pause → block</text>
+  <rect x="735" y="498" width="530" height="44" rx="6" class="step"/><circle cx="757" cy="520" r="11" fill="#fff"/><text x="757" y="521" class="c" font-weight="800" fill="#2d3a5e" font-size="11">0b</text><text x="784" y="515" class="stepn">revocation check</text><text x="784" y="533" class="small" fill="#cdd6ee">jti / agent / human → block</text>
+  <rect x="735" y="550" width="530" height="44" rx="6" class="step"/><circle cx="757" cy="572" r="11" fill="#fff"/><text x="757" y="573" class="c" font-weight="800" fill="#2d3a5e" font-size="12">1</text><text x="784" y="567" class="stepn">ensure_fresh</text><text x="784" y="585" class="small" fill="#cdd6ee">token expiry → refresh-or-deny</text>
+  <rect x="735" y="602" width="530" height="56" rx="6" class="step"/><circle cx="757" cy="630" r="11" fill="#fff"/><text x="757" y="631" class="c" font-weight="800" fill="#2d3a5e" font-size="12">2</text><text x="784" y="624" class="stepn">policy.evaluate</text><text x="784" y="642" class="small" fill="#cdd6ee">scope → RBAC → ReBAC → ABAC → budget</text>
+  <rect x="735" y="666" width="530" height="44" rx="6" class="step"/><circle cx="757" cy="688" r="11" fill="#fff"/><text x="757" y="689" class="c" font-weight="800" fill="#2d3a5e" font-size="12">3</text><text x="784" y="683" class="stepn">decision</text><text x="784" y="701" class="small" fill="#cdd6ee">allow · deny · require_approval</text>
+  <rect x="735" y="718" width="530" height="44" rx="6" class="step"/><circle cx="757" cy="740" r="11" fill="#fff"/><text x="757" y="741" class="c" font-weight="800" fill="#2d3a5e" font-size="12">4</text><text x="784" y="735" class="stepn">forward / hold / block</text><text x="784" y="753" class="small" fill="#cdd6ee">upstream · approvals</text>
+  <rect x="735" y="770" width="530" height="44" rx="6" class="step"/><circle cx="757" cy="792" r="11" fill="#fff"/><text x="757" y="793" class="c" font-weight="800" fill="#2d3a5e" font-size="12">5</text><text x="784" y="787" class="stepn">audit.append + anchor</text><text x="784" y="805" class="small" fill="#cdd6ee">hash chain + signed checkpoint</text>
+  <rect x="735" y="822" width="530" height="44" rx="6" class="step"/><circle cx="757" cy="844" r="11" fill="#fff"/><text x="757" y="845" class="c" font-weight="800" fill="#2d3a5e" font-size="12">6</text><text x="784" y="839" class="stepn">obs.record</text><text x="784" y="857" class="small" fill="#cdd6ee">latency · counters · JSON log</text>
+
+  <!-- LEFT modules (verification / config) -->
+  <text x="60" y="360" class="sec">VERIFICATION &amp; POLICY</text>
+  <rect x="60" y="372" width="620" height="92" rx="8" class="crypto"/>
+  <text x="76" y="394" class="mod">identity.rs — token verification</text>
+  <text x="76" y="416" class="body">JWT ES256/RS256/EdDSA · JWKS-by-kid or PEM · asymmetric-only allowlist</text>
+  <text x="76" y="434" class="body">RFC-8693 act-chain · aud/iss/exp · dev-envelope fallback</text>
+  <text x="76" y="453" class="mono">reads: JWKS file / --token · feeds steps 1</text>
+
+  <rect x="60" y="476" width="620" height="92" rx="8" class="io"/>
+  <text x="76" y="498" class="mod">policy.rs — authorization engine</text>
+  <text x="76" y="520" class="body">RBAC (require_role) · ReBAC (require_relation) · ABAC (Match tree: any/not)</text>
+  <text x="76" y="538" class="body">scope narrowing · resource attrs · budgets · lint / dry-run</text>
+  <text x="76" y="557" class="mono">reads: warden.policy.toml (hot-reload) · feeds step 2</text>
+
+  <rect x="60" y="580" width="300" height="86" rx="8" class="io"/>
+  <text x="76" y="602" class="mod">control.rs</text>
+  <text x="76" y="624" class="body">pause / resume state;</text>
+  <text x="76" y="642" class="body">SIGHUP reload flag</text>
+  <text x="76" y="660" class="mono">control file · steps 0, 0a</text>
+
+  <rect x="380" y="580" width="300" height="86" rx="8" class="crypto"/>
+  <text x="396" y="602" class="mod">revocation.rs</text>
+  <text x="396" y="624" class="body">tail signed ES256 feed;</text>
+  <text x="396" y="642" class="body">jti/agent/human · fail-closed</text>
+  <text x="396" y="660" class="mono">revocations.jsonl + pubkey · 0b</text>
+
+  <rect x="60" y="678" width="620" height="40" rx="8" class="store"/>
+  <text x="76" y="702" class="mono">stores · config:  warden.policy.toml · control file · revocations.jsonl · JWKS / keys</text>
+
+  <!-- RIGHT modules (IO / output) -->
+  <text x="1320" y="360" class="sec">EXECUTION · EVIDENCE · STATE</text>
+  <rect x="1320" y="372" width="620" height="74" rx="8" class="io"/>
+  <text x="1336" y="394" class="mod">budget.rs — per-run caps</text>
+  <text x="1336" y="416" class="body">durable counters, survive restarts; checked in evaluate, incremented on forward</text>
+  <text x="1336" y="435" class="mono">budget.json</text>
+
+  <rect x="1320" y="458" width="620" height="86" rx="8" class="crypto"/>
+  <text x="1336" y="480" class="mod">approvals.rs + approval_sig.rs — human holds</text>
+  <text x="1336" y="502" class="body">file-backed pending queue; verify ES256 per-action assertion bound to action id;</text>
+  <text x="1336" y="520" class="body">allowlist by approver (JWKS kid) · fail-closed if unsigned</text>
+  <text x="1336" y="538" class="mono">approvals.json · approver JWKS · step 4</text>
+
+  <rect x="1320" y="556" width="620" height="74" rx="8" class="io"/>
+  <text x="1336" y="578" class="mod">upstream.rs — forward path</text>
+  <text x="1336" y="600" class="body">StdioUpstream: send → read with timeout (worker thread); auto-restart on crash/hang</text>
+  <text x="1336" y="619" class="mono">spawns / talks to upstream MCP server · step 4</text>
+
+  <rect x="1320" y="642" width="620" height="86" rx="8" class="crypto"/>
+  <text x="1336" y="664" class="mod">audit.rs + anchor.rs — black-box recorder</text>
+  <text x="1336" y="686" class="body">SHA-256 hash chain (accountability folded in); exclusive flock + head cache (O(1));</text>
+  <text x="1336" y="704" class="body">ES256 signed checkpoints (rollback/rewrite detection)</text>
+  <text x="1336" y="722" class="mono">audit.jsonl (locked) · anchor.jsonl + anchor key · step 5</text>
+
+  <rect x="1320" y="740" width="620" height="60" rx="8" class="io"/>
+  <text x="1336" y="762" class="mod">obs.rs — observability</text>
+  <text x="1336" y="782" class="body">counters by decision/outcome · structured JSON logs (OTel fields) · latency</text>
+  <text x="1336" y="798" class="mono">metrics.json / stderr · step 6</text>
+
+  <rect x="1320" y="810" width="620" height="62" rx="8" class="crypto"/>
+  <text x="1336" y="832" class="mod">sink.rs — standards-based sinks (evidence out)</text>
+  <text x="1336" y="852" class="body">OCSF → SIEM/lake · CAEP transmitter (signed SET) · filter × delivery</text>
+  <text x="1336" y="868" class="mono">blocking = ship-before-act (fail-closed) · fail-safe = tail audit WAL</text>
+
+  <!-- arrows actors -> transport -->
+  <path d="M240 192 L240 246" class="flow" marker-end="url(#a)"/>
+  <text x="248" y="226" class="small">tools/call + token</text>
+
+  <!-- transport -> gateway -->
+  <path d="M1000 316 L1000 338" class="flow" marker-end="url(#a)"/>
+
+  <!-- gateway <-> left/right modules (representative) -->
+  <path d="M735 572 L680 522" class="thin" marker-end="url(#at)"/>
+  <path d="M735 630 L680 522" class="thin" marker-end="url(#at)"/>
+  <path d="M735 520 L680 623" class="thin" marker-end="url(#at)"/>
+  <path d="M1265 630 L1320 495" class="thin" marker-end="url(#at)"/>
+  <path d="M1265 740 L1320 593" class="thin" marker-end="url(#at)"/>
+  <path d="M1265 792 L1320 685" class="thin" marker-end="url(#at)"/>
+
+  <!-- forward to upstream -->
+  <path d="M1740 556 L1740 246" class="flow" marker-end="url(#a)"/>
+  <path d="M1740 192 L1740 230" class="flow" marker-end="url(#a)"/>
+  <text x="1748" y="300" class="small">allowed call (MCP)</text>
+
+  <!-- response back -->
+  <path d="M715 416 L420 160" class="flow" marker-end="url(#a)"/>
+  <text x="470" y="300" class="small">JSON-RPC response (allow/deny/hold)</text>
+
+  <!-- Legend -->
+  <rect x="40" y="930" width="1920" height="76" rx="8" fill="#fff" stroke="#cdd8e8" stroke-width="1.4"/>
+  <text x="58" y="954" class="sec">LEGEND</text>
+  <rect x="58" y="966" width="24" height="24" class="agent"/><text x="90" y="980" class="body">Agent</text>
+  <rect x="180" y="966" width="24" height="24" class="ext"/><text x="212" y="980" class="body">External actor</text>
+  <rect x="350" y="966" width="24" height="24" class="core"/><text x="382" y="980" class="body">Gateway core</text>
+  <rect x="520" y="966" width="24" height="24" class="crypto"/><text x="552" y="980" class="body">Crypto / security module</text>
+  <rect x="760" y="966" width="24" height="24" class="io"/><text x="792" y="980" class="body">I/O · policy module</text>
+  <rect x="960" y="966" width="24" height="24" class="store"/><text x="992" y="980" class="body">Persistent store (file)</text>
+  <line x1="1180" y1="978" x2="1230" y2="978" class="flow" marker-end="url(#a)"/><text x="1240" y="982" class="body">request / data flow</text>
+  <line x1="1430" y1="978" x2="1480" y2="978" class="thin" marker-end="url(#at)"/><text x="1490" y="982" class="body">step ↔ module call</text>
+  <text x="58" y="1000" class="small">All decisions fail-closed; identity is carried (verified, not looked up); audit is append-only, hash-chained, and externally anchored.</text>
+</svg>

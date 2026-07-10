@@ -1,0 +1,69 @@
+# Example Warden proxy config. Run: warden proxy --config warden.proxy.toml
+# Flags always override these values. Keys mirror the `--flag` names (no `--`).
+
+[proxy]
+upstream = "python3 examples/echo_mcp_server.py"
+agent = "prod-agent"
+policy = "warden.policy.toml"
+
+# Identity (uncomment to require verified tokens):
+# token = "/run/secrets/agent.jwt"
+# aud = "warden:prod"
+# jwks = "/keys/jwks.json"
+# leeway = 60
+
+# Production hardening:
+# require-handshake = true
+# upstream-timeout = 30
+# drain-timeout = 10              # graceful drain window on SIGTERM/SIGINT (seconds)
+# http-auth-token = "..."         # bearer required on the HTTP surface (gateway mode)
+
+# PII / secret redaction of recorded & exported data (NOT the forwarded call):
+# redact = "gdpr,pci,secrets"     # profiles: gdpr / ccpa / hipaa / pci / secrets / all
+# redact-fields = "internal_ref"  # extra field-name keywords to redact
+# redact-scan-values = true       # also scan string VALUES (email/SSN/card/IP)
+# budget = ".warden/budget.json"
+# anchor = ".warden/anchor.jsonl"
+# anchor-key = "/keys/anchor_priv.pem"
+# approver-jwks = "/keys/approvers.jwks.json"
+# revocations = ".warden/revocations.jsonl"
+# revocation-pub = "/keys/revoke_pub.pem"
+# control = ".warden/control"
+
+# Observability / transport:
+# log-format = "json"
+# metrics = ".warden/metrics.json"
+# http = "127.0.0.1:8080"
+
+# --- Standards-based sinks: format x transport x filter x delivery ---
+# Each [[sink]] ships a projected view of decisions to an external system.
+#   format    = "ocsf" (SIEM/lake) | "caep" (signed Security Event Token)
+#   transport = "file" | "webhook"
+#   filter    = "all" | "deny" | "high-risk" | "revocation"
+#   delivery  = "fail-safe" (tails the audit WAL off the hot path)
+#             | "blocking"  (high-assurance: action holds until evidence is acked)
+
+# [[sink]]                      # OCSF -> SIEM / Security Lake (fail-safe)
+# name = "security-lake"
+# format = "ocsf"
+# transport = "webhook"
+# endpoint = "https://collector.internal/ocsf"
+# filter = "all"
+# delivery = "fail-safe"
+
+# [[sink]]                      # Warden as a CAEP / Shared-Signals transmitter
+# name = "ssf-out"
+# format = "caep"
+# transport = "webhook"
+# endpoint = "https://idp.internal/ssf/events"
+# filter = "high-risk"          # emit signed SETs for risky/revocation events
+# delivery = "fail-safe"
+# key = "/keys/set_signing.pem"
+
+# [[sink]]                      # High-assurance: no action without durable evidence
+# name = "regulated-evidence"
+# format = "ocsf"
+# transport = "webhook"
+# endpoint = "https://worm.internal/append"
+# filter = "all"
+# delivery = "blocking"

@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1200" viewBox="0 0 2000 1200">
+  <defs>
+    <style>
+      .title { font: 800 36px 'Segoe UI', Arial, sans-serif; fill:#16243f; }
+      .sub   { font: 400 16px 'Segoe UI', Arial, sans-serif; fill:#51607a; }
+      .sec   { font: 700 13px 'Segoe UI', Arial, sans-serif; fill:#51607a; letter-spacing:1.5px; }
+      .h2    { font: 700 16px 'Segoe UI', Arial, sans-serif; fill:#16243f; }
+      .hw    { font: 700 18px 'Segoe UI', Arial, sans-serif; fill:#ffffff; }
+      .body  { font: 400 13px 'Segoe UI', Arial, sans-serif; fill:#28384f; }
+      .small { font: 400 12px 'Segoe UI', Arial, sans-serif; fill:#46566e; }
+      .colh  { font: 700 13px 'Segoe UI', Arial, sans-serif; fill:#ffffff; letter-spacing:0.5px; }
+      .fm    { font: 700 13px 'Segoe UI', Arial, sans-serif; fill:#16243f; }
+      .mono  { font: 400 11.5px 'Consolas', monospace; fill:#5a3a12; }
+      .c { text-anchor:middle; dominant-baseline:middle; }
+      .panel { fill:#f5f8fc; stroke:#cdd8e8; stroke-width:1.6; }
+      .core  { fill:#16243f; }
+      .l1 { fill:#eef3f9; stroke:#9fb0cf; stroke-width:1.5; }
+      .l2 { fill:#e7f1da; stroke:#5f7d3f; stroke-width:1.5; }
+      .l3 { fill:#fbeede; stroke:#9a6b1e; stroke-width:1.5; }
+      .hdr { fill:#2d3a5e; }
+      .rowA { fill:#ffffff; }
+      .rowB { fill:#f3f6fb; }
+      .grid { stroke:#dbe3ee; stroke-width:1; }
+      .safe { fill:#e3f3ec; stroke:#74b79a; stroke-width:1.2; }
+      .recover { fill:#eaf0fa; stroke:#9fb0cf; stroke-width:1.2; }
+      .postt { font: 700 11.5px 'Segoe UI', Arial, sans-serif; fill:#176b4c; }
+      .postr { font: 700 11.5px 'Segoe UI', Arial, sans-serif; fill:#2d3a5e; }
+    </style>
+  </defs>
+  <rect width="2000" height="1200" fill="#ffffff"/>
+  <text x="55" y="52" class="title">Warden — Resilience &amp; Failure-Mode Architecture</text>
+  <text x="57" y="80" class="sub">How Warden degrades safely · every mechanism below is implemented and test-proven · fail-closed is the default everywhere</text>
+
+  <!-- ============ LEFT PANEL ============ -->
+  <!-- fail-closed core -->
+  <rect x="40" y="120" width="520" height="92" rx="12" class="core"/>
+  <text x="300" y="156" class="hw c">FAIL-CLOSED BY DEFAULT</text>
+  <text x="300" y="184" class="body c" fill="#c9d4ea">No accountable identity · expired token · unverifiable signature</text>
+  <text x="300" y="202" class="body c" fill="#c9d4ea">· unreachable dependency  ⇒  deny the action, record why.</text>
+
+  <!-- defense in depth (revocation) -->
+  <rect x="40" y="232" width="520" height="300" rx="12" class="panel"/>
+  <text x="60" y="258" class="sec">DEFENSE IN DEPTH · STOPPING A BAD AGENT</text>
+  <rect x="64" y="272" width="472" height="68" rx="8" class="l1"/>
+  <text x="80" y="296" class="h2">Layer 1 · Short token TTL</text>
+  <text x="80" y="320" class="small">Passive. Authority lapses on its own; blast radius bounded to exp.</text>
+  <text x="500" y="306" class="postr c" text-anchor="end">always on</text>
+  <rect x="64" y="348" width="472" height="68" rx="8" class="l2"/>
+  <text x="80" y="372" class="h2">Layer 2 · Signed revocation feed</text>
+  <text x="80" y="396" class="small">Near-real-time. Tail jti / agent / human; fail-closed; unsigned rejected.</text>
+  <text x="500" y="382" class="postt c" text-anchor="end">~sub-second</text>
+  <rect x="64" y="424" width="472" height="68" rx="8" class="l3"/>
+  <text x="80" y="448" class="h2">Layer 3 · Per-action human hold</text>
+  <text x="80" y="472" class="small">Zero-lag. High-risk action waits for a signed approval — synchronous stop.</text>
+  <text x="500" y="458" class="postr c" text-anchor="end">immediate</text>
+  <text x="60" y="516" class="small">Layers 1+3 cover the cases the feed (Layer 2) is slowest at.</text>
+
+  <!-- durability -->
+  <rect x="40" y="552" width="520" height="300" rx="12" class="panel"/>
+  <text x="60" y="578" class="sec">DURABILITY ACROSS RESTART</text>
+  <text x="60" y="608" class="body">• Budgets persist (<tspan class="mono">budget.json</tspan>) — no reset-by-restart bypass.</text>
+  <text x="60" y="636" class="body">• Approvals are file-backed (<tspan class="mono">approvals.json</tspan>) — holds survive.</text>
+  <text x="60" y="664" class="body">• Audit head cached + exclusive <tspan class="mono">flock</tspan> — O(1), single-writer.</text>
+  <text x="60" y="692" class="body">• Signed anchor checkpoints shipped to WORM — offsite proof.</text>
+  <text x="60" y="720" class="body">• Policy hot-reload (SIGHUP / resume) — no process restart.</text>
+  <text x="60" y="748" class="body">• In-flight requests lost on crash are simply re-issued by the</text>
+  <text x="74" y="768" class="body">client (idempotent at the JSON-RPC id); state above is durable.</text>
+  <rect x="60" y="788" width="476" height="46" rx="8" class="safe"/>
+  <text x="300" y="816" class="fm c">Orchestrator liveness/readiness via GET /healthz</text>
+
+  <!-- sink delivery -->
+  <rect x="40" y="868" width="520" height="150" rx="12" class="panel"/>
+  <text x="60" y="894" class="sec">SINK DELIVERY · EVIDENCE OUT</text>
+  <rect x="64" y="908" width="472" height="44" rx="8" class="l2"/>
+  <text x="80" y="928" class="h2">Fail-safe</text>
+  <text x="320" y="930" class="small" text-anchor="end">tails the audit WAL · retry · replay</text>
+  <text x="80" y="946" class="small">never touches the action path — a down sink only lags.</text>
+  <rect x="64" y="960" width="472" height="48" rx="8" class="l3"/>
+  <text x="80" y="980" class="h2">Blocking (high-assurance)</text>
+  <text x="520" y="982" class="small" text-anchor="end">no action without evidence</text>
+  <text x="80" y="998" class="small">action holds until the sink acks · sink down ⇒ fail closed.</text>
+
+  <!-- ============ RIGHT: failure-mode matrix ============ -->
+  <text x="600" y="138" class="sec">FAILURE-MODE MATRIX  (failure → detection → response → posture)</text>
+  <!-- header -->
+  <rect x="600" y="150" width="1360" height="40" rx="6" class="hdr"/>
+  <text x="616" y="171" class="colh">FAILURE MODE</text>
+  <text x="956" y="171" class="colh">DETECTION</text>
+  <text x="1276" y="171" class="colh">RESPONSE</text>
+  <text x="1812" y="171" class="colh">POSTURE</text>
+  <line x1="950" y1="150" x2="950" y2="1030" class="grid"/>
+  <line x1="1270" y1="150" x2="1270" y2="1030" class="grid"/>
+  <line x1="1780" y1="150" x2="1780" y2="1030" class="grid"/>
+
+  <!-- rows: y0=192, h=70 -->
+  <!-- 1 -->
+  <rect x="600" y="192" width="1360" height="70" class="rowA"/>
+  <text x="616" y="220" class="fm">Upstream crash / EOF</text><text x="616" y="240" class="small">tool server dies</text>
+  <text x="966" y="222" class="body">read returns 0 / send fails</text><text x="966" y="242" class="mono">upstream.rs</text>
+  <text x="1286" y="222" class="body">kill + auto-restart child;</text><text x="1286" y="242" class="body">clean JSON-RPC error to agent</text>
+  <rect x="1792" y="206" width="150" height="42" rx="6" class="safe"/><text x="1867" y="222" class="postt c">recovers</text><text x="1867" y="238" class="small c">next call</text>
+  <!-- 2 -->
+  <rect x="600" y="262" width="1360" height="70" class="rowB"/>
+  <text x="616" y="290" class="fm">Upstream hang</text><text x="616" y="310" class="small">no response</text>
+  <text x="966" y="292" class="body">per-call recv_timeout</text><text x="966" y="312" class="mono">--upstream-timeout</text>
+  <text x="1286" y="292" class="body">kill + restart;</text><text x="1286" y="312" class="body">"timed out; restarted"</text>
+  <rect x="1792" y="276" width="150" height="42" rx="6" class="safe"/><text x="1867" y="292" class="postt c">bounded</text><text x="1867" y="308" class="small c">latency</text>
+  <!-- 3 -->
+  <rect x="600" y="332" width="1360" height="70" class="rowA"/>
+  <text x="616" y="360" class="fm">Approval hold blocks</text><text x="616" y="380" class="small">long human wait</text>
+  <text x="966" y="362" class="body">worker-per-request model</text><text x="966" y="382" class="mono">Arc&lt;Gateway&gt;</text>
+  <text x="1286" y="362" class="body">hold blocks only its worker;</text><text x="1286" y="382" class="body">others flow; drain on exit</text>
+  <rect x="1792" y="346" width="150" height="42" rx="6" class="safe"/><text x="1867" y="362" class="postt c">throughput</text><text x="1867" y="378" class="small c">preserved</text>
+  <!-- 4 -->
+  <rect x="600" y="402" width="1360" height="70" class="rowB"/>
+  <text x="616" y="430" class="fm">Concurrent audit write</text><text x="616" y="450" class="small">2nd process / thread</text>
+  <text x="966" y="432" class="body">exclusive advisory lock</text><text x="966" y="452" class="mono">File::try_lock</text>
+  <text x="1286" y="432" class="body">2nd writer refused;</text><text x="1286" y="452" class="body">O(1) head cache, no corruption</text>
+  <rect x="1792" y="416" width="150" height="42" rx="6" class="safe"/><text x="1867" y="432" class="postt c">integrity</text><text x="1867" y="448" class="small c">held</text>
+  <!-- 5 -->
+  <rect x="600" y="472" width="1360" height="70" class="rowA"/>
+  <text x="616" y="500" class="fm">Audit tamper / rollback</text><text x="616" y="520" class="small">edit or truncate log</text>
+  <text x="966" y="502" class="body">hash chain + ES256 anchor</text><text x="966" y="522" class="mono">audit.rs · anchor.rs</text>
+  <text x="1286" y="502" class="body">verify fails; "rollback detected"</text><text x="1286" y="522" class="body">— attacker can't forge a checkpoint</text>
+  <rect x="1792" y="486" width="150" height="42" rx="6" class="safe"/><text x="1867" y="502" class="postt c">provable</text><text x="1867" y="518" class="small c">detection</text>
+  <!-- 6 -->
+  <rect x="600" y="542" width="1360" height="70" class="rowB"/>
+  <text x="616" y="570" class="fm">Token expires mid-session</text><text x="616" y="590" class="small">long-running agent</text>
+  <text x="966" y="572" class="body">freshness check per action</text><text x="966" y="592" class="mono">ensure_fresh</text>
+  <text x="1286" y="572" class="body">reload refreshed token,</text><text x="1286" y="592" class="body">else deny ("no longer authorized")</text>
+  <rect x="1792" y="556" width="150" height="42" rx="6" class="safe"/><text x="1867" y="572" class="postt c">fail-closed</text><text x="1867" y="588" class="small c">or refresh</text>
+  <!-- 7 -->
+  <rect x="600" y="612" width="1360" height="70" class="rowA"/>
+  <text x="616" y="640" class="fm">Revocation feed stale</text><text x="616" y="660" class="small">/ unreachable</text>
+  <text x="966" y="642" class="body">set only ever adds denies</text><text x="966" y="662" class="mono">revocation.rs</text>
+  <text x="1286" y="642" class="body">no false grant; Layer-3 holds</text><text x="1286" y="662" class="body">remain the zero-lag stop</text>
+  <rect x="1792" y="626" width="150" height="42" rx="6" class="safe"/><text x="1867" y="642" class="postt c">fail-safe</text><text x="1867" y="658" class="small c">denies only</text>
+  <!-- 8 -->
+  <rect x="600" y="682" width="1360" height="70" class="rowB"/>
+  <text x="616" y="710" class="fm">Control / admin plane down</text><text x="616" y="730" class="small">SecOps unreachable</text>
+  <text x="966" y="712" class="body">degrades by design</text>
+  <text x="1286" y="712" class="body">short TTL + per-action holds;</text><text x="1286" y="732" class="body">pause is a local file</text>
+  <rect x="1792" y="696" width="150" height="42" rx="6" class="recover"/><text x="1867" y="712" class="postr c">degrade</text><text x="1867" y="728" class="small c">safe</text>
+  <!-- 9 -->
+  <rect x="600" y="752" width="1360" height="70" class="rowA"/>
+  <text x="616" y="780" class="fm">Bad policy on reload</text><text x="616" y="800" class="small">malformed edit</text>
+  <text x="966" y="782" class="body">parse error on from_file</text><text x="966" y="802" class="mono">SIGHUP / resume</text>
+  <text x="1286" y="782" class="body">keep current policy in memory;</text><text x="1286" y="802" class="body">log error — no outage</text>
+  <rect x="1792" y="766" width="150" height="42" rx="6" class="recover"/><text x="1867" y="782" class="postr c">no outage</text><text x="1867" y="798" class="small c">last-good</text>
+  <!-- 10 -->
+  <rect x="600" y="822" width="1360" height="70" class="rowB"/>
+  <text x="616" y="850" class="fm">IdP / JWKS unreachable</text><text x="616" y="870" class="small">key endpoint down</text>
+  <text x="966" y="852" class="body">verify fails for new tokens</text><text x="966" y="872" class="mono">identity.rs</text>
+  <text x="1286" y="852" class="body">verified sessions run to exp;</text><text x="1286" y="872" class="body">new sessions denied</text>
+  <rect x="1792" y="836" width="150" height="42" rx="6" class="safe"/><text x="1867" y="852" class="postt c">fail-closed</text><text x="1867" y="868" class="small c">new only</text>
+  <!-- 11 -->
+  <rect x="600" y="892" width="1360" height="70" class="rowA"/>
+  <text x="616" y="920" class="fm">Bad / forged signature</text><text x="616" y="940" class="small">token · approval · feed</text>
+  <text x="966" y="922" class="body">asymmetric verify fails</text><text x="966" y="942" class="mono">ES256/RS256/EdDSA</text>
+  <text x="1286" y="922" class="body">reject (alg-confusion blocked;</text><text x="1286" y="942" class="body">unsigned approval not honored)</text>
+  <rect x="1792" y="906" width="150" height="42" rx="6" class="safe"/><text x="1867" y="922" class="postt c">rejected</text><text x="1867" y="938" class="small c">fail-closed</text>
+  <!-- 12 -->
+  <rect x="600" y="962" width="1360" height="68" class="rowB"/>
+  <text x="616" y="990" class="fm">Warden / pod crash</text><text x="616" y="1010" class="small">process dies</text>
+  <text x="966" y="992" class="body">orchestrator probe</text><text x="966" y="1012" class="mono">/healthz</text>
+  <text x="1286" y="992" class="body">restart sidecar; durable budget</text><text x="1286" y="1012" class="body">+ approvals + locked chain reload</text>
+  <rect x="1792" y="976" width="150" height="42" rx="6" class="safe"/><text x="1867" y="992" class="postt c">durable</text><text x="1867" y="1008" class="small c">state</text>
+
+  <rect x="600" y="150" width="1360" height="880" rx="4" fill="none" stroke="#cdd8e8" stroke-width="1.4"/>
+
+  <!-- bottom note -->
+  <rect x="40" y="1052" width="1920" height="120" rx="10" fill="#16243f"/>
+  <text x="60" y="1086" class="hw">Design posture</text>
+  <text x="60" y="1116" class="body" fill="#c9d4ea">Three independent revocation layers (passive TTL · signed feed · synchronous hold) · single-writer tamper-evident + anchored audit · isolated bounded upstream calls with auto-restart · per-action fail-closed checks.</text>
+  <text x="60" y="1144" class="body" fill="#c9d4ea">No single dependency outage (IdP, feed, control plane, upstream, storage) can cause an over-permissive decision — the worst case is "deny and record," never "allow silently."</text>
+</svg>
