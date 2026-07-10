@@ -5,16 +5,21 @@ between an agent and its tool servers. Every `tools/call` is checked against
 policy -- **allow / deny / require-approval** -- held for a human when required,
 and recorded in a **tamper-evident audit chain**.
 
+<p align="center">
+  <a href="https://vijayvedula.github.io/warden/warden-overview.html">
+    <img src="docs/media/warden-overview.gif" alt="Warden in 15 seconds: a proxy on the action boundary that verifies identity, applies policy, and records every call" width="820">
+  </a>
+</p>
+<p align="center">
+  <em>▶ <a href="https://vijayvedula.github.io/warden/warden-overview.html">Watch the full interactive explainer</a> &middot; <a href="https://vijayvedula.github.io/warden/">all explainers</a></em>
+</p>
+
 The thesis: in the agentic era the binding constraint is *trust, not capability*.
 Capability is the labs' game; the open problem is letting autonomous agents
 **act** with bounded authority, verifiable behaviour, and accountability. Warden
 is the *brake* and the *black-box recorder* for agent actions.
 
 > MVP status: single-node, file-backed, MCP stdio transport. Not production-hardened.
-
-**▶ New here? Watch the [animated explainers](https://vijayvedula.github.io/warden/)** —
-short visual walkthroughs of what Warden is, how it authorizes, and how it plugs
-into each platform. ([full list below](#explainers).)
 
 ## Quickstart
 
