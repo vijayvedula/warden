@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   security-events: write # for CodeQL SARIF upload
+  actions: read # CodeQL reads the workflow run (fixes "Resource not accessible")
 
 jobs:
   # RUSTSEC advisories on the locked dependency tree.
@@ -32,16 +33,22 @@ jobs:
         with:
           command: check advisories bans licenses sources
 
-  # Static analysis (CodeQL supports Rust).
+  # Static analysis (CodeQL). Rust uses build-mode: none -- CodeQL extracts from
+  # source + `cargo metadata` rather than tracing a compile. Autobuild tracing is
+  # unreliable for Rust and left most files "extracted with errors".
   codeql:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: github/codeql-action/init@v3
         with:
           languages: rust
-      - uses: github/codeql-action/autobuild@v3
+          build-mode: none
       - uses: github/codeql-action/analyze@v3
 
   # Clippy as a security/quality gate (deny warnings).
