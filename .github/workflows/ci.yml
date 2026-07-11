@@ -57,3 +57,25 @@ jobs:
         env:
           WARDEN_BIN: ${{ github.workspace }}/target/debug/warden
         run: pytest -q
+
+  # Code coverage of the Rust core, uploaded to Codecov (powers the README
+  # coverage badge). One-time setup: connect the repo at https://codecov.io and,
+  # if prompted, add a CODECOV_TOKEN repo secret.
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - uses: Swatinem/rust-cache@v2
+      - name: Generate coverage (lcov)
+        run: cargo llvm-cov --workspace --lcov --output-path lcov.info
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: lcov.info
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

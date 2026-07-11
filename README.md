@@ -1,5 +1,15 @@
 # Warden
 
+<p align="center">
+  <a href="https://github.com/vijayvedula/warden/actions/workflows/ci.yml"><img src="https://github.com/vijayvedula/warden/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/vijayvedula/warden/actions/workflows/security.yml"><img src="https://github.com/vijayvedula/warden/actions/workflows/security.yml/badge.svg" alt="Security scan"></a>
+  <a href="https://codecov.io/gh/vijayvedula/warden"><img src="https://codecov.io/gh/vijayvedula/warden/branch/main/graph/badge.svg" alt="Coverage"></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/vijayvedula/warden"><img src="https://api.scorecard.dev/projects/github.com/vijayvedula/warden/badge" alt="OpenSSF Scorecard"></a>
+  <a href="#license"><img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg" alt="License: MIT OR Apache-2.0"></a>
+  <a href="https://github.com/vijayvedula/warden/releases"><img src="https://img.shields.io/github/v/release/vijayvedula/warden?sort=semver&display_name=tag&label=release" alt="Release"></a>
+  <a href="https://vijayvedula.github.io/warden/"><img src="https://img.shields.io/badge/docs-user%20guide-informational.svg" alt="Docs"></a>
+</p>
+
 **An action control plane for AI agents.** Warden sits as an **MCP proxy**
 between an agent and its tool servers. Every `tools/call` is checked against
 policy -- **allow / deny / require-approval** -- held for a human when required,

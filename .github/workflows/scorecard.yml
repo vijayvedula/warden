@@ -1,0 +1,33 @@
+name: Scorecard
+
+# OpenSSF Scorecard — automated security-posture checks (branch protection,
+# token permissions, pinned actions, dependency update tooling, SAST, etc.).
+# Publishes results to the OpenSSF and powers the README Scorecard badge.
+# Activates once the repository is public; runs weekly and on demand.
+
+on:
+  branch_protection_rule:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch: {}
+
+permissions: read-all
+
+jobs:
+  analysis:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # upload the SARIF to code scanning
+      id-token: write # publish results to the OpenSSF (OIDC)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ossf/scorecard-action@v2
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
