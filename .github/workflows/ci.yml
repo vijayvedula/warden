@@ -8,6 +8,10 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+# Least privilege: read-only by default (no job here needs more).
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest

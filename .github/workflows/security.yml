@@ -7,10 +7,9 @@ on:
   schedule:
     - cron: "0 6 * * 1" # weekly, catches newly-disclosed advisories
 
+# Least privilege at the top level; the codeql job elevates its own scopes.
 permissions:
   contents: read
-  security-events: write # for CodeQL SARIF upload
-  actions: read # CodeQL reads the workflow run (fixes "Resource not accessible")
 
 jobs:
   # RUSTSEC advisories on the locked dependency tree.
