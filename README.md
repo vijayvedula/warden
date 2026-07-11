@@ -161,9 +161,6 @@ navigable handbook — concepts, getting started, the integration model, and a
   [Google ADK](https://vijayvedula.github.io/warden/guide/providers/google-adk.html) ·
   [Azure AI Foundry](https://vijayvedula.github.io/warden/guide/providers/azure-ai.html)
 
-The guide is an [mdBook](https://rust-lang.github.io/mdBook/) built from
-[`docs/guide/`](docs/guide/) and published to GitHub Pages alongside the
-explainers.
 
 ## Roadmap (the trust-layer wedge)
 
@@ -188,9 +185,6 @@ Short **animated explainers** (self-contained HTML decks). Browse them all at th
 - [Platform Integration](https://vijayvedula.github.io/warden/platform-integration.html) — the one coupling point, mapped to any platform
 - [Warden × Databricks](https://vijayvedula.github.io/warden/integration-databricks.html) · [× AWS](https://vijayvedula.github.io/warden/integration-aws.html) · [× Google](https://vijayvedula.github.io/warden/integration-google.html) · [× LangGraph](https://vijayvedula.github.io/warden/integration-langgraph.html)
 
-> The decks are published from [`docs/explainers/`](docs/explainers/) via GitHub
-> Pages. Enable it once the repo is public: **Settings → Pages → Source: GitHub
-> Actions**. Until then the source HTML renders locally in any browser.
 
 ## License
 
