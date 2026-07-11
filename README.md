@@ -15,13 +15,17 @@ policy -- **allow / deny / require-approval** -- held for a human when required,
 and recorded in a **tamper-evident audit chain**.
 
 <p align="center">
-  <strong>▶ Watch the interactive explainers:
-  <a href="https://vijayvedula.github.io/warden/explainers/">vijayvedula.github.io/warden/explainers</a></strong>
+  <a href="https://vijayvedula.github.io/warden/explainers/warden-overview.html">
+    <img src="docs/media/warden-explainer-poster.png" width="840"
+         alt="What Warden is: a proxy on the action boundary that verifies a signed identity, applies policy, and records every call as allow / block / hold">
+  </a>
+</p>
+<p align="center">
+  <sub>▶ <a href="https://vijayvedula.github.io/warden/explainers/warden-overview.html">Click to watch it interactively</a> &nbsp;·&nbsp; <a href="https://vijayvedula.github.io/warden/explainers/">all explainers</a></sub>
 </p>
 <p align="center">
   <sub>
-    Animated walkthroughs — click any:
-    <a href="https://vijayvedula.github.io/warden/explainers/warden-overview.html">The Platform</a> ·
+    Or jump straight to one:
     <a href="https://vijayvedula.github.io/warden/explainers/accountable-authorization.html">Accountable Authorization</a> ·
     <a href="https://vijayvedula.github.io/warden/explainers/reference-architecture.html">Reference Architecture</a> ·
     <a href="https://vijayvedula.github.io/warden/explainers/threat-model.html">Threat Model</a> ·
