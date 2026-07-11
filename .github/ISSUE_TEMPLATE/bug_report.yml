@@ -1,0 +1,62 @@
+name: 🐛 Bug report
+description: Something in Warden isn't working as documented.
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. For **security vulnerabilities**,
+        do **not** use this form — see [SECURITY.md](https://github.com/vijayvedula/warden/blob/main/SECURITY.md).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and what you expected instead.
+      placeholder: Warden allowed a call that the policy should have denied…
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands, the policy, and the request if possible. Minimal repros get fixed fastest.
+      render: shell
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - Proxy / decision pipeline
+        - Policy engine
+        - Identity / token verification
+        - Audit chain / anchor
+        - HTTP transport
+        - Python SDK / adapters
+        - Docs / examples
+        - Other / not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      description: Output of `warden --version` or the commit SHA you built.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / audit output
+      description: Paste `--log-format json` output or `warden audit tail`. Redact secrets.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmations
+      options:
+        - label: I searched existing issues and this isn't a duplicate.
+          required: true
+        - label: This is not a security vulnerability (those go through private reporting).
+          required: true

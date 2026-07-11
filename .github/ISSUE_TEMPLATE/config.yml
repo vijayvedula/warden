@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Questions & ideas
+    url: https://github.com/vijayvedula/warden/discussions
+    about: Ask a question, propose an idea, or say hello — use Discussions, not issues.
+  - name: 🔒 Report a security vulnerability
+    url: https://github.com/vijayvedula/warden/security/advisories/new
+    about: Do NOT open a public issue. Use private vulnerability reporting (see SECURITY.md).

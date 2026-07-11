@@ -4,6 +4,28 @@ Thanks for your interest in Warden — an action control plane for AI agents.
 Contributions of all kinds are welcome: bug reports, docs, policy examples,
 platform adapters, and core changes.
 
+## You don't need to "join" — just contribute
+
+Warden uses the standard open-source flow: **no access is required to
+contribute.** Fork the repo, push a branch to your fork, and open a pull request
+— a maintainer reviews and merges. That's it.
+
+Ways to help:
+
+- **Report a bug** or **request a feature** — open an issue (templates guide you).
+- **Ask a question or float an idea** — use
+  [Discussions](https://github.com/vijayvedula/warden/discussions).
+- **Pick up a task** — look for issues labelled
+  [`good first issue`](https://github.com/vijayvedula/warden/labels/good%20first%20issue)
+  and [`help wanted`](https://github.com/vijayvedula/warden/labels/help%20wanted).
+- **Write a platform adapter** — see the SDK and the adapter rules below.
+- **Improve the docs / guide / examples.**
+
+Contributors are credited automatically in the repo's contributor graph and
+release notes. If you'd like to take on a larger ongoing role, just say so in a
+PR or Discussion — sustained, high-quality contributions are how trust (and,
+over time, commit access) is earned.
+
 ## Ground rules
 
 - **Be respectful.** See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
