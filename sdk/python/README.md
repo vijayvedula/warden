@@ -18,11 +18,6 @@ pip install warden-agent-sdk            # core (pure stdlib): token builder + co
 pip install "warden-agent-sdk[jwt]"     # + asymmetric JWT signing (PyJWT)
 ```
 
-> Not on PyPI yet? Install from source until the first release:
-> ```sh
-> pip install "git+https://github.com/vijayvedula/warden.git#subdirectory=sdk/python"
-> ```
-
 ## Build a token
 
 ```python

@@ -39,11 +39,6 @@ pip install warden-agent-sdk             # core: token builder + conformance kit
 pip install "warden-agent-sdk[jwt]"      # + asymmetric JWT signing (PyJWT)
 ```
 
-> **Before the first PyPI release**, install from source instead:
-> ```sh
-> pip install "git+https://github.com/vijayvedula/warden.git#subdirectory=sdk/python"
-> ```
-
 The SDK core is pure-stdlib; the proxy always accepts a raw conforming token, so
 the SDK is convenience, not a requirement.
 
