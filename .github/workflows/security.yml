@@ -34,9 +34,14 @@ jobs:
           command: check advisories bans licenses sources
 
   # Static analysis (CodeQL). Rust uses build-mode: none -- CodeQL extracts from
-  # source + `cargo metadata` rather than tracing a compile. Autobuild tracing is
-  # unreliable for Rust and left most files "extracted with errors".
+  # source + `cargo metadata` rather than tracing a compile.
+  #
+  # Only runs on a PUBLIC repo: uploading results needs GitHub code scanning,
+  # which requires public visibility (or GitHub Advanced Security). While private
+  # the upload fails with "Code scanning is not enabled", so we skip the job
+  # rather than fail the workflow. It activates automatically once public.
   codeql:
+    if: github.event.repository.visibility == 'public'
     runs-on: ubuntu-latest
     permissions:
       contents: read
