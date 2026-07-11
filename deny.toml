@@ -42,6 +42,10 @@ allow = [
   "CDLA-Permissive-2.0",
 ]
 confidence-threshold = 0.9
+# The first-party crate is source-available under the Functional Source License
+# (FSL-1.1-ALv2), which is not an SPDX license id. Allow it just for `warden`;
+# dependencies still must satisfy the allowlist above.
+exceptions = [{ name = "warden", allow = ["LicenseRef-FSL-1.1-ALv2"] }]
 
 [sources]
 # Only crates.io by default; flag anything from other registries/git.

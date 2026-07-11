@@ -8,8 +8,8 @@ version = "0.1.0"
 description = "Client SDK for Warden — build and sign canonical Warden delegation tokens, and route agent frameworks through the Warden MCP proxy."
 readme = "README.md"
 requires-python = ">=3.9"
-license = "MIT OR Apache-2.0"
-license-files = ["LICENSE-MIT", "LICENSE-APACHE"]
+license = "LicenseRef-FSL-1.1-ALv2"
+license-files = ["LICENSE", "LICENSE-APACHE"]
 keywords = ["warden", "mcp", "ai-agents", "authorization", "delegation", "rfc8693"]
 authors = [{ name = "Warden contributors" }]
 classifiers = [

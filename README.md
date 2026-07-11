@@ -3,10 +3,9 @@
 <p align="center">
   <a href="https://github.com/vijayvedula/warden/actions/workflows/ci.yml"><img src="https://github.com/vijayvedula/warden/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/vijayvedula/warden/actions/workflows/security.yml"><img src="https://github.com/vijayvedula/warden/actions/workflows/security.yml/badge.svg" alt="Security scan"></a>
-  <a href="https://codecov.io/gh/vijayvedula/warden"><img src="https://codecov.io/gh/vijayvedula/warden/branch/main/graph/badge.svg" alt="Coverage"></a>
-  <a href="https://scorecard.dev/viewer/?uri=github.com/vijayvedula/warden"><img src="https://api.scorecard.dev/projects/github.com/vijayvedula/warden/badge" alt="OpenSSF Scorecard"></a>
-  <a href="#license"><img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg" alt="License: MIT OR Apache-2.0"></a>
-  <a href="https://github.com/vijayvedula/warden/releases"><img src="https://img.shields.io/github/v/release/vijayvedula/warden?sort=semver&display_name=tag&label=release" alt="Release"></a>
+  <a href="https://securityscorecards.dev/viewer/?uri=github.com/vijayvedula/warden"><img src="https://api.securityscorecards.dev/projects/github.com/vijayvedula/warden/badge" alt="OpenSSF Scorecard"></a>
+  <a href="#license"><img src="https://img.shields.io/badge/license-FSL--1.1--ALv2-blue.svg" alt="License: FSL-1.1-ALv2"></a>
+  <img src="https://img.shields.io/badge/release-v0.1.0-blue.svg" alt="Release v0.1.0">
   <a href="https://vijayvedula.github.io/warden/"><img src="https://img.shields.io/badge/docs-user%20guide-informational.svg" alt="Docs"></a>
 </p>
 
@@ -185,6 +184,17 @@ Short **animated explainers** (self-contained HTML decks). Browse them all at th
 
 ## License
 
-Dual-licensed under either of **[MIT](LICENSE-MIT)** or
-**[Apache-2.0](LICENSE-APACHE)** at your option. Contributions are accepted under
-the same terms; see [CONTRIBUTING.md](CONTRIBUTING.md).
+Source-available under the **[Functional Source License 1.1
+(FSL-1.1-ALv2)](LICENSE)**.
+
+- **Free to use** for any purpose — personal, internal, and commercial —
+  **except a Competing Use** (offering a product or service that substitutes for
+  Warden or is substantially the same).
+- **Every version becomes Apache-2.0 two years after its release** (the
+  [Future License](LICENSE-APACHE)), so Warden is on a guaranteed path to full
+  open source.
+
+The FSL is *source-available* (not an OSI "open source" license today) and
+converts to open source on that schedule — see <https://fsl.software> for the
+rationale. Contributions are accepted under the same license; see
+[CONTRIBUTING.md](CONTRIBUTING.md).

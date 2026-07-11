@@ -39,7 +39,9 @@ Hardening pass from an adversarial review of the security-critical paths.
 
 ### Added
 - Public open-source release.
-- Dual licensing under **MIT OR Apache-2.0**.
+- Source-available licensing under the **Functional Source License 1.1
+  (FSL-1.1-ALv2)**: free for any use except a Competing Use, with each version
+  converting to Apache-2.0 two years after its release.
 - `warden-sdk` (Python): token builder, conformance kit, identity adapters
   (Databricks, AWS Bedrock/STS, Google ADK, Azure Entra ID) and orchestration
   shims (LangGraph, Google ADK).

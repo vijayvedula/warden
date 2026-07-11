@@ -31,8 +31,13 @@ over time, commit access) is earned.
 - **Be respectful.** See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 - **Security issues are private.** Do **not** open a public issue for a
   vulnerability — follow [SECURITY.md](SECURITY.md).
-- **License.** By contributing you agree your work is dual-licensed under
-  **MIT OR Apache-2.0**, matching the project.
+- **License.** Warden is source-available under the **Functional Source License
+  1.1 (FSL-1.1-ALv2)**, which converts each version to Apache-2.0 two years after
+  release. By contributing, you agree your contribution is licensed under the
+  same terms, and you grant the Licensor the right to license your contribution
+  under the FSL and the Apache-2.0 Future License (so the project can keep a
+  single, consistent license). A lightweight CLA/DCO may be added as the project
+  grows.
 
 ## Development setup
 

@@ -109,4 +109,6 @@ pytest
 ruff check .
 ```
 
-Licensed under **MIT OR Apache-2.0**.
+Source-available under the **Functional Source License 1.1 (FSL-1.1-ALv2)** —
+free for any use except a Competing Use; each version becomes Apache-2.0 two
+years after release. See [LICENSE](../../LICENSE).
