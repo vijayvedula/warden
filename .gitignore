@@ -55,3 +55,11 @@ venv/
 # Fundraising material — kept locally, never committed.
 /docs/warden-seed-deck.md
 /docs/warden-deck.html
+
+# Orphaned positioning / exec-pitch diagrams and marketing doc — kept locally,
+# not part of the public repo (referenced by nothing in the tree).
+/docs/why-warden.md
+/docs/where-warden-fits.svg
+/docs/warden-agentic-patterns.svg
+/docs/warden-integration-architecture-exec.svg
+/docs/warden-reference-architecture-exec.svg
