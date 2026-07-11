@@ -83,8 +83,8 @@ and the [token & claims spec](../reference/token.md).
 - **Install the SDK** into the agent's environment:
 
   ```sh
-  pip install warden-sdk          # token builder + adapters + ProxyConfig
-  pip install "warden-sdk[jwt]"   # add this for production JWT signing (JwtSigner)
+  pip install warden-agent-sdk          # token builder + adapters + ProxyConfig
+  pip install "warden-agent-sdk[jwt]"   # add this for production JWT signing (JwtSigner)
   ```
 
 - **A Databricks workspace** with Unity Catalog enabled, a **service principal**

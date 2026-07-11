@@ -68,7 +68,7 @@ export PATH="$PWD/target/release:$PATH"
 
 # Install the SDK (provides the aws identity adapter). Add the [jwt] extra for
 # the production signing path in Step 1.
-pip install "warden-sdk[jwt]"
+pip install "warden-agent-sdk[jwt]"
 ```
 
 You also need an AWS environment where AgentCore Identity (or your IdP) performs

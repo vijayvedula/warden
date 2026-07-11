@@ -134,7 +134,7 @@ agent -- tools/call --> Warden --+- policy: allow -----> upstream MCP server -> 
 Warden's only coupling point is a single signed token (RFC 8693 delegation:
 `sub` = accountable human, `act` = the acting chain, plus RBAC/ABAC/ReBAC/scope).
 Any platform integrates by mapping its native identity to that token -- pure data
-mapping, no policy logic. The [**warden-sdk**](sdk/python/) ships that glue:
+mapping, no policy logic. The [**warden-agent-sdk**](sdk/python/) ships that glue:
 
 - **Identity adapters** -- Databricks (OBO + Unity Catalog), AWS Bedrock
   (STS AssumeRole + session tags), Google ADK / Vertex (workload identity),

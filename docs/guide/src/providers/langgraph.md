@@ -51,7 +51,7 @@ cargo build --release
 export PATH="$PWD/target/release:$PATH"
 
 # 2. Python deps: the SDK, LangGraph, the MCP adapter, the model, and MCP itself
-pip install warden-sdk langgraph langchain-mcp-adapters langchain-anthropic mcp
+pip install warden-agent-sdk langgraph langchain-mcp-adapters langchain-anthropic mcp
 
 # 3. The agent's model key
 export ANTHROPIC_API_KEY=sk-ant-...

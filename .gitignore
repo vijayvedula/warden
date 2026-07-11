@@ -63,3 +63,6 @@ venv/
 /docs/warden-agentic-patterns.svg
 /docs/warden-integration-architecture-exec.svg
 /docs/warden-reference-architecture-exec.svg
+
+# Drafts / marketing (kept local, not part of the public repo)
+/docs/blog/

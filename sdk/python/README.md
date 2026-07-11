@@ -1,4 +1,4 @@
-# warden-sdk (Python)
+# warden-agent-sdk (Python)
 
 Client SDK for [Warden](https://github.com/vijayvedula/warden) — build and sign
 canonical Warden **delegation tokens**, and route agent frameworks through the
@@ -14,9 +14,14 @@ at all** — this package is convenience, not a new trust surface.
 ## Install
 
 ```sh
-pip install warden-sdk            # core (pure stdlib): token builder + conformance
-pip install "warden-sdk[jwt]"     # + asymmetric JWT signing (PyJWT)
+pip install warden-agent-sdk            # core (pure stdlib): token builder + conformance
+pip install "warden-agent-sdk[jwt]"     # + asymmetric JWT signing (PyJWT)
 ```
+
+> Not on PyPI yet? Install from source until the first release:
+> ```sh
+> pip install "git+https://github.com/vijayvedula/warden.git#subdirectory=sdk/python"
+> ```
 
 ## Build a token
 

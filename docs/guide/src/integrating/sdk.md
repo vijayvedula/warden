@@ -1,12 +1,12 @@
 # The Python SDK
 
-`warden-sdk` is the convenience layer for producing Warden tokens and wiring the
+`warden-agent-sdk` is the convenience layer for producing Warden tokens and wiring the
 proxy into an agent framework. The core is pure-stdlib; JWT signing is an
 optional extra.
 
 ```sh
-pip install warden-sdk             # token builder + adapters + conformance kit
-pip install "warden-sdk[jwt]"      # + asymmetric JWT signing (PyJWT)
+pip install warden-agent-sdk             # token builder + adapters + conformance kit
+pip install "warden-agent-sdk[jwt]"      # + asymmetric JWT signing (PyJWT)
 ```
 
 > The proxy always accepts a raw conforming token — the SDK is convenience, not a

@@ -72,7 +72,7 @@ equal that value, or the call is rejected as an actor mismatch.
 - **The Python SDK** (identity adapter + proxy helpers). The JWT signer used in
   production needs the `jwt` extra:
   ```sh
-  pip install "warden-sdk[jwt]"
+  pip install "warden-agent-sdk[jwt]"
   ```
 - **An Azure tenant** with Microsoft Entra ID, plus a **managed identity** (or
   app registration) for the agent and the app roles / Azure RBAC assignments you

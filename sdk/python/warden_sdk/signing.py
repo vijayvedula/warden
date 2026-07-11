@@ -6,7 +6,7 @@ the public key is rejected. This module is the local/dev signer; in production
 the private key should live in a KMS/HSM and the platform issuer should sign
 (see the no-forged-authority rule).
 
-Requires the ``jwt`` extra:  ``pip install "warden-sdk[jwt]"``.
+Requires the ``jwt`` extra:  ``pip install "warden-agent-sdk[jwt]"``.
 """
 
 from __future__ import annotations
@@ -50,7 +50,7 @@ class JwtSigner:
             import jwt  # PyJWT
         except ImportError as e:  # pragma: no cover - exercised via the extra
             raise ImportError(
-                "JWT signing needs the 'jwt' extra: pip install 'warden-sdk[jwt]'"
+                "JWT signing needs the 'jwt' extra: pip install 'warden-agent-sdk[jwt]'"
             ) from e
 
         headers: dict[str, Any] = {}

@@ -18,7 +18,7 @@ agent framework --(MCP)--> warden proxy --(MCP)--> your tool server
 | [google-adk/](google-adk/) | Google ADK / Vertex Agent Engine | workload identity / service account | token + policy; live run needs GCP |
 | [azure-ai/](azure-ai/) | Azure AI Foundry Agent Service | Entra ID managed identity + OBO | token + policy; live run needs Azure |
 
-Every example uses the **[warden-sdk](../sdk/python/)** identity adapters to mint
+Every example uses the **[warden-agent-sdk](../sdk/python/)** identity adapters to mint
 the token and the orchestration shims to wire the proxy. The proxy always accepts
 a raw conforming token with no SDK at all — the SDK is convenience.
 

@@ -2,7 +2,7 @@ name: Release
 
 # Continuous delivery. Push a semver tag (e.g. v0.1.0) to cut a release:
 #   - cross-platform `warden` binaries attached to a GitHub Release
-#   - the warden-sdk Python package published to PyPI (Trusted Publishing)
+#   - the warden-agent-sdk Python package published to PyPI (Trusted Publishing)
 #   - a multi-arch container image pushed to GHCR
 # Everything keys off the immutable tag — build once, release the same artifact.
 

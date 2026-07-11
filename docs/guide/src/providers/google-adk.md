@@ -79,9 +79,9 @@ IAM's emphasis on condition expressions is a natural fit for Warden's policy
 - **Install the SDK** and the ADK wiring:
 
   ```sh
-  pip install warden-sdk        # identity adapter + orchestration shim
+  pip install warden-agent-sdk        # identity adapter + orchestration shim
   pip install google-adk        # ADK, for the MCP toolset
-  pip install "warden-sdk[jwt]" # only needed for production JWT signing
+  pip install "warden-agent-sdk[jwt]" # only needed for production JWT signing
   ```
 
 - **A GCP project** with the agent running as a **service account** (or a

@@ -1,4 +1,4 @@
-"""warden-sdk — build and sign canonical Warden delegation tokens, and route
+"""warden-agent-sdk — build and sign canonical Warden delegation tokens, and route
 agent frameworks through the Warden MCP proxy.
 
 Two things, per the design (docs/platform-integration.md):

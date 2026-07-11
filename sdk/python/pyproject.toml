@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "warden-sdk"
+name = "warden-agent-sdk"
 version = "0.1.0"
 description = "Client SDK for Warden — build and sign canonical Warden delegation tokens, and route agent frameworks through the Warden MCP proxy."
 readme = "README.md"
