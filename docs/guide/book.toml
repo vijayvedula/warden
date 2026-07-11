@@ -6,8 +6,8 @@ language = "en"
 src = "src"
 
 [output.html]
-default-theme = "navy"
-preferred-dark-theme = "navy"
+default-theme = "light"
+preferred-dark-theme = "light"
 git-repository-url = "https://github.com/vijayvedula/warden"
 edit-url-template = "https://github.com/vijayvedula/warden/edit/main/docs/guide/{path}"
 additional-css = ["theme/warden.css"]

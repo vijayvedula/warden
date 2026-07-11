@@ -1,7 +1,6 @@
-/* Warden brand accents for the mdBook theme. */
+/* Warden brand accents for the mdBook theme, tuned for the light theme. */
 :root {
-  --warden-gold: #ffd166;
-  --warden-blue: #5ec8e8;
+  --warden-gold: #b8860b; /* darker gold — readable on a light background */
 }
 
 .menu-title {
@@ -9,15 +8,11 @@
   letter-spacing: 0.2px;
 }
 
-/* Links pick up the brand blue; visited stays legible. */
-.content a:not(.header) {
-  color: var(--warden-blue);
-}
-
-/* A convention used across the guides for the three decisions. */
-.content code.allow { color: #6ee7a8; }
-.content code.deny { color: #ff6f6f; }
-.content code.hold { color: var(--warden-gold); }
+/* The three decisions, used across the guides as `code.allow/deny/hold`.
+   Colours chosen to stay legible on the light background. */
+.content code.allow { color: #0a7d33; } /* green  */
+.content code.deny  { color: #c0392b; } /* red    */
+.content code.hold  { color: #b8860b; } /* amber  */
 
 /* Callout blocks: > **Note:** / > **Warning:** */
 blockquote {
