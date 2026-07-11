@@ -112,8 +112,7 @@ pub fn run() {
         ),
     ];
 
-    let mut id = 1i64;
-    for (tool, args, note) in script {
+    for (id, (tool, args, note)) in (1i64..).zip(script) {
         println!("> {note}");
         println!("  call: {tool}({})", compact(&args));
         let req = Request::new(id, "tools/call", json!({ "name": tool, "arguments": args }));
@@ -122,7 +121,6 @@ pub fn run() {
         let marker = decision_marker(out.decision.as_str(), is_error);
         println!("  {marker} [{}] {}", out.outcome, text);
         println!();
-        id += 1;
     }
 
     stop.store(true, Ordering::SeqCst);
