@@ -63,4 +63,4 @@ fix); tool matching is case-exact.
   — the full threat model.
 - [docs/production-readiness.md](https://github.com/vijayvedula/warden/blob/main/docs/production-readiness.md)
   — the readiness checklist and residuals.
-- The [Threat Model explainer](https://vijayvedula.github.io/warden/explainers/threat-model.html).
+- The [Threat Model explainer](https://vijayvedula.github.io/warden/threat-model.html).

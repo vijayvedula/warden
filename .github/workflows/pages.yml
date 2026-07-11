@@ -1,8 +1,10 @@
 name: Docs (GitHub Pages)
 
-# Publishes the Warden User Guide (mdBook) at the Pages root, with the curated
-# explainer decks bundled under /explainers/. Only committed files are deployed,
-# so excluded explainers never leak.
+# Publishes the curated explainer decks at the Pages root, and the Warden User
+# Guide (mdBook) under /guide/. Only committed files are deployed, so excluded
+# explainers never leak.
+#   /        -> explainers gallery + decks
+#   /guide/  -> user guide
 #
 # One-time setup after making the repo public:
 #   Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
@@ -40,11 +42,14 @@ jobs:
           mdbook-version: latest
       - name: Build the user guide
         run: mdbook build docs/guide
-      - name: Bundle explainers under /explainers
-        run: cp -r docs/explainers docs/guide/book/explainers
+      - name: Assemble site (explainers at root, guide under /guide)
+        run: |
+          mkdir -p _site/guide
+          cp -a docs/explainers/.  _site/         # explainer decks + gallery -> site root
+          cp -a docs/guide/book/.  _site/guide/   # mdBook user guide -> /guide/
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
-          path: docs/guide/book
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

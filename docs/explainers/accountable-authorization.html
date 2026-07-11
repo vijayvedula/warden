@@ -84,6 +84,7 @@
   .scenelabel b{color:var(--ink)}
   .hint{width:100%; max-width:1180px; text-align:center; color:#5c6475; font-size:12px; font-family:var(--mono); padding-bottom:30px}
   @media (max-width:640px){ .scenelabel{display:none} .tagline{display:none} body{justify-content:center} .topbar{padding:14px 12px 8px} .brand{font-size:17px} .controls{justify-content:center; gap:10px; padding:12px 8px 18px} .dots{flex-basis:100%; order:5; margin-top:2px; gap:6px} .hint{display:none} }
+  @media (orientation:landscape) and (max-height:540px){ body{justify-content:flex-start} .topbar{padding:6px 16px 2px} .brand{font-size:15px} .tagline,.scenelabel,.progress,.hint,.dots{display:none} .stage{width:min(100%, calc((100dvh - 84px) * 16 / 9)); max-width:none; margin:4px 0 2px} .controls{justify-content:center; gap:8px; padding:4px 8px 6px} .btn{width:34px; height:34px; font-size:15px} .btn.play{width:40px; height:40px; font-size:16px} }
 </style>
 </head>
 <body>

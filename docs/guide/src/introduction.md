@@ -49,5 +49,5 @@ command line and your agent framework of choice.
 3. Write a policy: which tools are allowed, denied, or need a human.
 4. Every call is now gated and recorded. Prove it with `warden audit verify`.
 
-> **New to Warden?** Watch the [animated overview](https://vijayvedula.github.io/warden/explainers/warden-overview.html)
+> **New to Warden?** Watch the [animated overview](https://vijayvedula.github.io/warden/warden-overview.html)
 > for a two-minute visual tour, then come back here.

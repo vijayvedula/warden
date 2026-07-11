@@ -8,6 +8,8 @@ src = "src"
 [output.html]
 default-theme = "light"
 preferred-dark-theme = "light"
+# The guide is served under /guide/ on GitHub Pages (explainers are at the root).
+site-url = "/warden/guide/"
 git-repository-url = "https://github.com/vijayvedula/warden"
 edit-url-template = "https://github.com/vijayvedula/warden/edit/main/docs/guide/{path}"
 additional-css = ["theme/warden.css"]

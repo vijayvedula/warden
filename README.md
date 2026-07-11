@@ -6,7 +6,7 @@
   <a href="https://securityscorecards.dev/viewer/?uri=github.com/vijayvedula/warden"><img src="https://api.securityscorecards.dev/projects/github.com/vijayvedula/warden/badge" alt="OpenSSF Scorecard"></a>
   <a href="#license"><img src="https://img.shields.io/badge/license-FSL--1.1--ALv2-blue.svg" alt="License: FSL-1.1-ALv2"></a>
   <img src="https://img.shields.io/badge/release-v0.1.0-blue.svg" alt="Release v0.1.0">
-  <a href="https://vijayvedula.github.io/warden/"><img src="https://img.shields.io/badge/docs-user%20guide-informational.svg" alt="Docs"></a>
+  <a href="https://vijayvedula.github.io/warden/guide/"><img src="https://img.shields.io/badge/docs-user%20guide-informational.svg" alt="Docs"></a>
 </p>
 
 **An action control plane for AI agents.** Warden sits as an **MCP proxy**
@@ -15,21 +15,21 @@ policy -- **allow / deny / require-approval** -- held for a human when required,
 and recorded in a **tamper-evident audit chain**.
 
 <p align="center">
-  <a href="https://vijayvedula.github.io/warden/explainers/warden-overview.html">
+  <a href="https://vijayvedula.github.io/warden/warden-overview.html">
     <img src="docs/media/warden-explainer-poster.png" width="840"
          alt="What Warden is: a proxy on the action boundary that verifies a signed identity, applies policy, and records every call as allow / block / hold">
   </a>
 </p>
 <p align="center">
-  <sub>▶ <a href="https://vijayvedula.github.io/warden/explainers/warden-overview.html">Click to watch it interactively</a> &nbsp;·&nbsp; <a href="https://vijayvedula.github.io/warden/explainers/">all explainers</a></sub>
+  <sub>▶ <a href="https://vijayvedula.github.io/warden/warden-overview.html">Click to watch it interactively</a> &nbsp;·&nbsp; <a href="https://vijayvedula.github.io/warden/">all explainers</a></sub>
 </p>
 <p align="center">
   <sub>
     Or jump straight to one:
-    <a href="https://vijayvedula.github.io/warden/explainers/accountable-authorization.html">Accountable Authorization</a> ·
-    <a href="https://vijayvedula.github.io/warden/explainers/reference-architecture.html">Reference Architecture</a> ·
-    <a href="https://vijayvedula.github.io/warden/explainers/threat-model.html">Threat Model</a> ·
-    <a href="https://vijayvedula.github.io/warden/explainers/platform-integration.html">Platform Integration</a>
+    <a href="https://vijayvedula.github.io/warden/accountable-authorization.html">Accountable Authorization</a> ·
+    <a href="https://vijayvedula.github.io/warden/reference-architecture.html">Reference Architecture</a> ·
+    <a href="https://vijayvedula.github.io/warden/threat-model.html">Threat Model</a> ·
+    <a href="https://vijayvedula.github.io/warden/platform-integration.html">Platform Integration</a>
   </sub>
 </p>
 
@@ -151,15 +151,15 @@ and [docs/twelve-factor.md](docs/twelve-factor.md) for cloud-native operation
 
 ## User guide
 
-The **[Warden User Guide](https://vijayvedula.github.io/warden/)** is the full,
+The **[Warden User Guide](https://vijayvedula.github.io/warden/guide/)** is the full,
 navigable handbook — concepts, getting started, the integration model, and a
 **separate end-to-end guide for each provider**:
 
-- [LangGraph](https://vijayvedula.github.io/warden/providers/langgraph.html) ·
-  [AWS Bedrock](https://vijayvedula.github.io/warden/providers/aws-bedrock.html) ·
-  [Databricks](https://vijayvedula.github.io/warden/providers/databricks.html) ·
-  [Google ADK](https://vijayvedula.github.io/warden/providers/google-adk.html) ·
-  [Azure AI Foundry](https://vijayvedula.github.io/warden/providers/azure-ai.html)
+- [LangGraph](https://vijayvedula.github.io/warden/guide/providers/langgraph.html) ·
+  [AWS Bedrock](https://vijayvedula.github.io/warden/guide/providers/aws-bedrock.html) ·
+  [Databricks](https://vijayvedula.github.io/warden/guide/providers/databricks.html) ·
+  [Google ADK](https://vijayvedula.github.io/warden/guide/providers/google-adk.html) ·
+  [Azure AI Foundry](https://vijayvedula.github.io/warden/guide/providers/azure-ai.html)
 
 The guide is an [mdBook](https://rust-lang.github.io/mdBook/) built from
 [`docs/guide/`](docs/guide/) and published to GitHub Pages alongside the
@@ -176,17 +176,17 @@ explainers.
 ## Explainers
 
 Short **animated explainers** (self-contained HTML decks). Browse them all at the
-**[explainers index](https://vijayvedula.github.io/warden/explainers/)**, or jump straight in:
+**[explainers index](https://vijayvedula.github.io/warden/)**, or jump straight in:
 
 **Core**
-- [The Platform](https://vijayvedula.github.io/warden/explainers/warden-overview.html) — what Warden is and the problem it solves
-- [Accountable Authorization](https://vijayvedula.github.io/warden/explainers/accountable-authorization.html) — the token-as-interface trust model
-- [Reference Architecture](https://vijayvedula.github.io/warden/explainers/reference-architecture.html) — how the pieces fit together
-- [Threat Model](https://vijayvedula.github.io/warden/explainers/threat-model.html) — what Warden defends, and what it doesn't
+- [The Platform](https://vijayvedula.github.io/warden/warden-overview.html) — what Warden is and the problem it solves
+- [Accountable Authorization](https://vijayvedula.github.io/warden/accountable-authorization.html) — the token-as-interface trust model
+- [Reference Architecture](https://vijayvedula.github.io/warden/reference-architecture.html) — how the pieces fit together
+- [Threat Model](https://vijayvedula.github.io/warden/threat-model.html) — what Warden defends, and what it doesn't
 
 **Integrations** (pair with the runnable [`examples/`](examples/))
-- [Platform Integration](https://vijayvedula.github.io/warden/explainers/platform-integration.html) — the one coupling point, mapped to any platform
-- [Warden × Databricks](https://vijayvedula.github.io/warden/explainers/integration-databricks.html) · [× AWS](https://vijayvedula.github.io/warden/explainers/integration-aws.html) · [× Google](https://vijayvedula.github.io/warden/explainers/integration-google.html) · [× LangGraph](https://vijayvedula.github.io/warden/explainers/integration-langgraph.html)
+- [Platform Integration](https://vijayvedula.github.io/warden/platform-integration.html) — the one coupling point, mapped to any platform
+- [Warden × Databricks](https://vijayvedula.github.io/warden/integration-databricks.html) · [× AWS](https://vijayvedula.github.io/warden/integration-aws.html) · [× Google](https://vijayvedula.github.io/warden/integration-google.html) · [× LangGraph](https://vijayvedula.github.io/warden/integration-langgraph.html)
 
 > The decks are published from [`docs/explainers/`](docs/explainers/) via GitHub
 > Pages. Enable it once the repo is public: **Settings → Pages → Source: GitHub
