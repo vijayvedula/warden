@@ -320,7 +320,14 @@ fn verify_jwt(token: &str, key: &DecodingKey, opts: &VerifyOpts) -> Result<Verif
     validation.validate_exp = true;
     validation.validate_nbf = true;
     match &opts.expected_aud {
-        Some(aud) => validation.set_audience(&[aud]),
+        Some(aud) => {
+            validation.set_audience(&[aud]);
+            // `jsonwebtoken` only checks `aud` when the claim is PRESENT; a token
+            // that omits `aud` would otherwise pass despite `--aud`. Require it so
+            // an audience-less token (e.g. one minted for a different relying
+            // party) fails closed.
+            validation.required_spec_claims.insert("aud".to_string());
+        }
         None => validation.validate_aud = false,
     }
     if let Some(iss) = &opts.expected_iss {
@@ -331,6 +338,9 @@ fn verify_jwt(token: &str, key: &DecodingKey, opts: &VerifyOpts) -> Result<Verif
             .filter(|s| !s.is_empty())
             .collect();
         validation.set_issuer(&allow);
+        // Same absent-claim gap: require `iss` so a token without one can't skip
+        // the issuer allowlist.
+        validation.required_spec_claims.insert("iss".to_string());
     }
 
     let data = decode::<Claims>(token, key, &validation)
@@ -435,6 +445,18 @@ mod tests {
         assert!(verify_jwt(&jwt, &ec_pub(), &o).is_err());
         o.require_at_jwt = false;
         assert!(verify_jwt(&jwt, &ec_pub(), &o).is_ok());
+    }
+
+    #[test]
+    fn jwt_without_aud_is_rejected_when_aud_expected() {
+        // A validly-signed token that OMITS `aud` must not pass when `--aud` is
+        // set (jsonwebtoken only checks aud when present; we now require it).
+        let mut claims = claims_json();
+        claims.as_object_mut().unwrap().remove("aud");
+        let jwt = sign_es256(&claims, "k1");
+        assert!(verify_jwt(&jwt, &ec_pub(), &opts(Some("warden:test"), "agent:bot-7")).is_err());
+        // With no expected aud configured, an aud-less token is still fine.
+        assert!(verify_jwt(&jwt, &ec_pub(), &opts(None, "agent:bot-7")).is_ok());
     }
 
     fn claims_json() -> Value {

@@ -8,7 +8,7 @@
 
 use crate::util::{canonical_json, now_unix, sha256_hex};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -281,22 +281,69 @@ impl AuditLog {
 }
 
 fn row_hash(e: &Entry, prev_hash: &str) -> String {
-    let material = format!(
-        "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}",
-        e.seq,
-        e.ts_unix,
-        e.agent,
-        e.tool,
-        canonical_json(&e.args),
-        e.decision,
-        e.outcome,
-        e.reason,
-        e.approver.as_deref().unwrap_or(""),
-        e.accountable,
-        e.act_chain.join(">"),
-        e.token_jti,
-        e.matched,
-        e.approval_jti.as_deref().unwrap_or(""),
-    );
-    sha256_hex(&format!("{material}|{prev_hash}"))
+    // Hash a canonical JSON object (sorted keys, JSON-escaped strings, nested
+    // args preserved as structured JSON) -- NOT a raw `|`-delimited join. A join
+    // is not injective: any field value containing the delimiter (`agent`,
+    // `tool`, `reason`, `accountable`, the `>`-joined `act_chain`, or the fully
+    // attacker-controlled `args`) could shift bytes across a field boundary so
+    // two different rows produced the same hash, letting the log be rewritten
+    // without breaking the chain. JSON encoding is unambiguous, closing that.
+    let material = json!({
+        "seq": e.seq,
+        "ts": e.ts_unix,
+        "agent": e.agent,
+        "tool": e.tool,
+        "args": e.args,
+        "decision": e.decision,
+        "outcome": e.outcome,
+        "reason": e.reason,
+        "approver": e.approver,
+        "accountable": e.accountable,
+        "act_chain": e.act_chain,
+        "token_jti": e.token_jti,
+        "matched": e.matched,
+        "approval_jti": e.approval_jti,
+        "prev": prev_hash,
+    });
+    sha256_hex(&canonical_json(&material))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn entry(agent: &str, tool: &str) -> Entry {
+        Entry {
+            seq: 1,
+            ts_unix: 0,
+            agent: agent.to_string(),
+            tool: tool.to_string(),
+            args: json!({}),
+            decision: "allow".to_string(),
+            outcome: "executed".to_string(),
+            reason: String::new(),
+            approver: None,
+            accountable: String::new(),
+            act_chain: vec![],
+            token_jti: String::new(),
+            matched: String::new(),
+            approval_jti: None,
+            prev_hash: String::new(),
+            row_hash: String::new(),
+        }
+    }
+
+    #[test]
+    fn row_hash_is_injective_across_field_boundaries() {
+        // The old `|`-delimited join was not injective: a value containing the
+        // delimiter could shift bytes across a field boundary so two DIFFERENT
+        // rows produced the SAME hash. These two must now differ.
+        let a = row_hash(&entry("bot", "wire|funds"), "prev");
+        let b = row_hash(&entry("bot|wire", "funds"), "prev");
+        assert_ne!(a, b, "delimiter-shifted fields must not collide");
+
+        // Sanity: identical rows still hash identically (deterministic).
+        let c = row_hash(&entry("bot", "wire|funds"), "prev");
+        assert_eq!(a, c);
+    }
 }

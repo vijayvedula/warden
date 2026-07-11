@@ -214,6 +214,21 @@ pub struct EvalResult {
     pub reason: String,
     /// Compact trace of which gates decided it (for the audit record).
     pub trace: String,
+    /// The matched rule's `max_per_run`, when it has one. The gateway reserves
+    /// it atomically at forward time so concurrent callers can't overshoot the
+    /// cap (the `counts` pre-check here is a fast path, not the authority).
+    pub budget_limit: Option<u32>,
+}
+
+impl EvalResult {
+    fn simple(decision: Decision, reason: String, trace: String) -> Self {
+        EvalResult {
+            decision,
+            reason,
+            trace,
+            budget_limit: None,
+        }
+    }
 }
 
 /// Result of static policy linting.
@@ -298,20 +313,20 @@ impl PolicyConfig {
     ) -> EvalResult {
         // 0. No accountable identity, in identity-required mode => fail closed.
         if self.require_identity && !subject.authenticated {
-            return EvalResult {
-                decision: Decision::Deny,
-                reason: "no accountable identity -- failing closed".to_string(),
-                trace: "identity".to_string(),
-            };
+            return EvalResult::simple(
+                Decision::Deny,
+                "no accountable identity -- failing closed".to_string(),
+                "identity".to_string(),
+            );
         }
 
         // 1. The narrowing: an authenticated agent may only act inside scope.
         if subject.authenticated && !scope_allows(tool, &subject.scope) {
-            return EvalResult {
-                decision: Decision::Deny,
-                reason: format!("`{tool}` outside delegated scope"),
-                trace: "scope".to_string(),
-            };
+            return EvalResult::simple(
+                Decision::Deny,
+                format!("`{tool}` outside delegated scope"),
+                "scope".to_string(),
+            );
         }
 
         for rule in &self.rules {
@@ -328,11 +343,11 @@ impl PolicyConfig {
             // Hard requirements on the selected rule.
             if let Some(role) = &rule.require_role {
                 if !subject.authenticated || !subject.roles.iter().any(|r| r == role) {
-                    return EvalResult {
-                        decision: Decision::Deny,
-                        reason: format!("missing required role `{role}`"),
-                        trace: format!("rbac:{role}"),
-                    };
+                    return EvalResult::simple(
+                        Decision::Deny,
+                        format!("missing required role `{role}`"),
+                        format!("rbac:{role}"),
+                    );
                 }
             }
             if let Some(req) = &rule.require_relation {
@@ -346,11 +361,11 @@ impl PolicyConfig {
                         return decided(rule, format!("rebac:{}@{resource}", req.relation));
                     }
                     Err(why) => {
-                        return EvalResult {
-                            decision: Decision::Deny,
-                            reason: why,
-                            trace: format!("rebac:{}", req.relation),
-                        }
+                        return EvalResult::simple(
+                            Decision::Deny,
+                            why,
+                            format!("rebac:{}", req.relation),
+                        )
                     }
                 }
             }
@@ -362,11 +377,11 @@ impl PolicyConfig {
             return decided(rule, format!("rule:{}", rule.tool));
         }
 
-        EvalResult {
-            decision: self.default,
-            reason: "no rule matched; default policy".to_string(),
-            trace: "default".to_string(),
-        }
+        EvalResult::simple(
+            self.default,
+            "no rule matched; default policy".to_string(),
+            "default".to_string(),
+        )
     }
 }
 
@@ -379,6 +394,8 @@ fn decided(rule: &Rule, trace: String) -> EvalResult {
         decision: rule.decision,
         reason,
         trace,
+        // Carry the cap so the gateway reserves it atomically at forward time.
+        budget_limit: rule.max_per_run,
     }
 }
 
@@ -387,11 +404,11 @@ fn over_budget(tool: &str, max: u32, counts: &HashMap<String, u32>) -> bool {
 }
 
 fn budget_denied(tool: &str, max: u32) -> EvalResult {
-    EvalResult {
-        decision: Decision::Deny,
-        reason: format!("budget exceeded: {tool} limited to {max} call(s) per run"),
-        trace: "budget".to_string(),
-    }
+    EvalResult::simple(
+        Decision::Deny,
+        format!("budget exceeded: {tool} limited to {max} call(s) per run"),
+        "budget".to_string(),
+    )
 }
 
 fn scope_allows(tool: &str, scope: &[String]) -> bool {
@@ -456,15 +473,25 @@ fn cond_matches(
         return false;
     };
     match (&cond.op, &cond.value) {
-        (Op::Gt, PolicyValue::Num(t)) => value.as_f64().is_some_and(|x| x > *t),
-        (Op::Lt, PolicyValue::Num(t)) => value.as_f64().is_some_and(|x| x < *t),
-        (Op::Eq, PolicyValue::Num(t)) => value
-            .as_f64()
-            .is_some_and(|x| (x - *t).abs() < f64::EPSILON),
+        (Op::Gt, PolicyValue::Num(t)) => coerce_num(value).is_some_and(|x| x > *t),
+        (Op::Lt, PolicyValue::Num(t)) => coerce_num(value).is_some_and(|x| x < *t),
+        (Op::Eq, PolicyValue::Num(t)) => {
+            coerce_num(value).is_some_and(|x| (x - *t).abs() < f64::EPSILON)
+        }
         (Op::Eq, PolicyValue::Str(s)) => value.as_str().is_some_and(|x| x == s),
         (Op::Contains, PolicyValue::Str(s)) => value.as_str().is_some_and(|x| x.contains(s)),
         _ => false,
     }
+}
+
+/// Coerce a value to a number for a numeric comparison, accepting a JSON number
+/// OR a numeric string. Without this, an agent could dodge a `gt`/`lt` threshold
+/// (e.g. an approval/deny gate on `amount`) by sending the number as a string
+/// (`"50000"`), which `as_f64()` rejects -- making the rule silently non-match
+/// and fall through.
+fn coerce_num(v: &Value) -> Option<f64> {
+    v.as_f64()
+        .or_else(|| v.as_str().and_then(|s| s.trim().parse::<f64>().ok()))
 }
 
 /// ReBAC check: the resource named in `req.resource_arg` must appear in the
@@ -509,6 +536,35 @@ mod tests {
     }
     fn no_counts() -> HashMap<String, u32> {
         HashMap::new()
+    }
+
+    #[test]
+    fn numeric_condition_coerces_string_encoded_number() {
+        let p = PolicyConfig::from_str(
+            "default = \"allow\"\n\
+             [[rules]]\n\
+             tool = \"wire_funds\"\n\
+             when = { arg = \"amount\", op = \"gt\", value = 1000 }\n\
+             decision = \"deny\"\n",
+        )
+        .unwrap();
+        let s = Subject::default();
+        let ev = |amount: Value| {
+            p.evaluate(
+                "wire_funds",
+                &json!({ "amount": amount }),
+                &s,
+                &empty_env(),
+                &no_counts(),
+            )
+            .decision
+        };
+        // A number sent as a JSON *string* must still trip the > 1000 deny gate
+        // (previously it fell through to the default allow).
+        assert_eq!(ev(json!("5000")), Decision::Deny);
+        // A genuine JSON number too, and under-threshold falls through to allow.
+        assert_eq!(ev(json!(5000)), Decision::Deny);
+        assert_eq!(ev(json!(10)), Decision::Allow);
     }
 
     fn authed() -> Subject {

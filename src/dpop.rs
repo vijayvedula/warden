@@ -104,13 +104,15 @@ pub fn verify_proof(
     if normalize_url(&p.htu) != normalize_url(url) {
         return Err("DPoP htu does not match the request URL".to_string());
     }
-    if let Some(iat) = p.iat {
-        if iat > now + leeway {
-            return Err("DPoP proof iat in the future".to_string());
-        }
-        if now > iat && now - iat > 300 + leeway {
-            return Err("DPoP proof is stale (> 5 min)".to_string());
-        }
+    // RFC 9449 requires `iat`. Without it, freshness is unenforceable and the
+    // proof becomes replayable once its jti ages out of the anti-replay cache --
+    // so a proof with no `iat` must be rejected, not treated as always-fresh.
+    let iat = p.iat.ok_or("DPoP proof missing iat")?;
+    if iat > now + leeway {
+        return Err("DPoP proof iat in the future".to_string());
+    }
+    if now > iat && now - iat > 300 + leeway {
+        return Err("DPoP proof is stale (> 5 min)".to_string());
     }
     let jkt = thumbprint(&jwk)?;
     if jkt != expected_jkt {
@@ -160,6 +162,24 @@ mod tests {
         let jkt = thumbprint(&pub_jwk()).unwrap();
         let proof = make_proof("POST", "https://warden/mcp", 1000, "valid1");
         assert!(verify_proof(&proof, "POST", "https://warden/mcp?x=1", &jkt, 1000, 30).is_ok());
+    }
+
+    #[test]
+    fn proof_without_iat_is_rejected() {
+        // RFC 9449 requires `iat`; without it freshness is unenforceable and the
+        // proof becomes replayable once its jti ages out.
+        let jkt = thumbprint(&pub_jwk()).unwrap();
+        let mut h = Header::new(Algorithm::ES256);
+        h.typ = Some("dpop+jwt".to_string());
+        h.jwk = Some(pub_jwk());
+        let key = EncodingKey::from_ec_pem(PRIV.as_bytes()).unwrap();
+        let proof = encode(
+            &h,
+            &json!({ "htm": "POST", "htu": "https://warden/mcp", "jti": "noiat1" }),
+            &key,
+        )
+        .unwrap();
+        assert!(verify_proof(&proof, "POST", "https://warden/mcp", &jkt, 1000, 30).is_err());
     }
 
     #[test]

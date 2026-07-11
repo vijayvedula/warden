@@ -130,6 +130,35 @@
   injected as file paths (keys/tokens), mountable as Docker/K8s secrets.
   - Follow-up: env-var secret injection and a published image.
 
+## Hardening review (pre-open-source)
+
+The security-critical paths (identity/crypto, decision pipeline & policy,
+parsing/transport, audit integrity) went through an adversarial review. Fixes
+landed for: an ungated forward of malformed `tools/call`; a non-injective audit
+row hash; JWT `aud`/`iss` not required when configured; an HTTP `Content-Length`
+process-abort DoS plus socket timeouts; revocation/freshness not re-checked
+after an approval wait; a budget check-then-increment race; a numeric-condition
+bypass via string-encoded numbers; redaction skipping numeric leaves; optional
+DPoP `iat`; a per-request-identity fallback to the session principal; and
+SSRF/DoS hardening of the outbound JWKS/OIDC fetch. Each has a regression test.
+
+**Documented residuals (not blockers; tracked):**
+- **Audit rollback needs the anchor.** Plain `warden audit verify` proves no
+  *interior* row changed, but a truncated tail (drop the last N rows) still
+  verifies; only a signed `--anchor` detects rollback. `verify` now says so.
+- **Audit-write availability choice.** A failed audit *write* logs loudly and
+  returns a placeholder; the decision still proceeds. The fail-*closed* evidence
+  gate is a blocking sink (`ship_blocking`). Use one where "no action without a
+  durable record" is required.
+- **Approval-assertion replay against an identical action.** A signed approval
+  is bound to the action *fingerprint* (agent+tool+args) with no per-instance
+  nonce, so a byte-identical future action can be auto-released. Full fix: a
+  per-request nonce.
+- **Tool matching is exact/case-sensitive** by design; only relevant if an
+  upstream resolves tool names case-insensitively.
+- **Host/root compromise holding the signing keys** remains out of scope until
+  KMS/HSM integration (see SECURITY.md).
+
 ## Working order
 
 **All P0, P1, and P2 items complete.** Each is proven by unit/integration tests

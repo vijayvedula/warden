@@ -36,6 +36,10 @@ allow = [
   "Zlib",
   "MPL-2.0",
   "CC0-1.0",
+  # Mozilla's bundled CA root data (webpki-roots, via ureq) ships under the
+  # Community Data License Agreement -- Permissive 2.0. It is a permissive
+  # data license; the roots are used for TLS validation of outbound JWKS/OIDC.
+  "CDLA-Permissive-2.0",
 ]
 confidence-threshold = 0.9
 

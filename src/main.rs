@@ -230,6 +230,17 @@ fn run_proxy(args: &[String]) -> Result<(), String> {
     );
     gateway.set_policy_path(&policy_path);
 
+    // --token (one session principal for every call) and --request-identity
+    // (a per-call bearer identity) are contradictory: mixing them invites a
+    // confused-deputy downgrade where a bearer-less call assumes the session
+    // human's authority. Reject the combination rather than pick a winner.
+    if !token_path.is_empty() && is_set(args, &config, "request-identity") {
+        return Err(
+            "--token and --request-identity are mutually exclusive (session vs per-request identity)"
+                .to_string(),
+        );
+    }
+
     // Bind the verified session token (who the agent acts for), if provided.
     if !token_path.is_empty() {
         let some = |s: &str| (!s.is_empty()).then(|| s.to_string());
@@ -530,6 +541,14 @@ fn run_audit(args: &[String]) -> Result<(), String> {
                     Ok(c) => println!("anchor OK: {c} signed checkpoint(s) match the chain"),
                     Err(msg) => return Err(format!("ANCHOR VERIFICATION FAILED: {msg}")),
                 }
+            } else {
+                // The hash chain proves no *interior* row was altered, but a
+                // self-consistent prefix (someone dropped the last N rows) still
+                // verifies. Only a signed anchor detects truncation/rollback.
+                eprintln!(
+                    "warden: note -- chain integrity only; without --anchor/--anchor-pub, \
+                     truncation or rollback of the tail is NOT detectable."
+                );
             }
             Ok(())
         }

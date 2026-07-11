@@ -359,7 +359,26 @@ impl Gateway {
             );
         }
         let Some((tool, args)) = parse_tool_call(&req.params) else {
-            return self.upstream.lock().unwrap().request(req);
+            // A `tools/call` we can't parse (missing / non-string `name`) must
+            // never reach the upstream ungated -- that would bypass identity,
+            // policy, budget, and the audit trail. Fail closed: deny and record.
+            let reason = "malformed tools/call: missing or non-string `name`".to_string();
+            let p = self
+                .principal_from_bearer(bearer)
+                .unwrap_or_else(|| self.snapshot());
+            let acct = acct(&p, "malformed", None);
+            self.audit_append(
+                "<malformed>",
+                &req.params,
+                "deny",
+                "blocked",
+                &reason,
+                None,
+                &acct,
+            );
+            return self
+                .blocked(req, Decision::Deny, "malformed", reason)
+                .response;
         };
         let req_principal = self.principal_from_bearer(bearer);
         self.handle_tool_call(req, &tool, &args, req_principal)
@@ -604,7 +623,17 @@ impl Gateway {
         // verified, else the process/session principal. Held locally so concurrent
         // requests never cross-attribute.
         let per_request = req_principal.is_some();
-        let p = req_principal.unwrap_or_else(|| self.snapshot());
+        // Principal selection. In per-request-identity mode a missing/invalid
+        // bearer must fall back to an UNAUTHENTICATED principal (so
+        // `require_identity` fails it closed) -- never to the session principal.
+        // Otherwise, if `--token` and `--request-identity` were both set, a
+        // bearer-less call would silently assume the session human's authority
+        // (a confused-deputy auth downgrade).
+        let p = match req_principal {
+            Some(p) => p,
+            None if self.request_verify.is_some() => Principal::unauthenticated(&self.agent),
+            None => self.snapshot(),
+        };
         let out = self.dispatch(req, tool, args, &p, per_request);
         let elapsed = start.elapsed();
         self.obs.record(
@@ -632,6 +661,17 @@ impl Gateway {
         out
     }
 
+    /// Check the negative-authority (revocation) plane for this principal now.
+    /// Returns the reason if the token/agent/human is revoked, else None. Shared
+    /// by the pre-decision gate and the post-approval re-check.
+    fn revoked_now(&self, p: &Principal) -> Option<String> {
+        let rev = self.revocations.as_ref()?;
+        let mut set = rev.lock().unwrap();
+        set.refresh();
+        set.is_revoked(&p.token_jti, &self.agent, &p.accountable)
+            .map(|why| why.to_string())
+    }
+
     fn dispatch(
         &self,
         req: &Request,
@@ -652,16 +692,11 @@ impl Gateway {
 
         // Event-driven revocation (negative authority): tail the feed and deny
         // if this token / agent / accountable human has been revoked.
-        if let Some(rev) = &self.revocations {
-            let mut set = rev.lock().unwrap();
-            set.refresh();
-            if let Some(why) = set.is_revoked(&p.token_jti, &self.agent, &p.accountable) {
-                drop(set);
-                let reason = format!("revoked: {why}");
-                let acct = acct(p, "revoked", None);
-                self.audit_append(tool, args, "deny", "blocked", &reason, None, &acct);
-                return self.blocked(req, Decision::Deny, "revoked", reason);
-            }
+        if let Some(why) = self.revoked_now(p) {
+            let reason = format!("revoked: {why}");
+            let acct = acct(p, "revoked", None);
+            self.audit_append(tool, args, "deny", "blocked", &reason, None, &acct);
+            return self.blocked(req, Decision::Deny, "revoked", reason);
         }
 
         // Inbound A2A: verify a forwarded Txn-Token (fail closed if invalid).
@@ -694,11 +729,12 @@ impl Gateway {
                 .unwrap()
                 .evaluate(tool, args, &p.subject, &env, &counts)
         };
-        let (decision, reason, trace) = (res.decision, res.reason, res.trace);
+        let (decision, reason, trace, budget_limit) =
+            (res.decision, res.reason, res.trace, res.budget_limit);
         match decision {
             Decision::Allow => {
                 let acct = self.acct_chain(p, &inbound, &trace, None);
-                self.forward(req, tool, args, decision, &reason, None, acct)
+                self.forward(req, tool, args, decision, &reason, None, budget_limit, acct)
             }
             Decision::Deny => {
                 let acct = acct(p, &trace, None);
@@ -750,9 +786,51 @@ impl Gateway {
                                 return self.blocked(req, Decision::Deny, "approval_unverified", r);
                             }
                         }
+                        // The approval wait can be long (minutes). Re-check the
+                        // negative-authority plane and token freshness so a
+                        // revocation or expiry *during the wait* is honoured --
+                        // otherwise an approved call executes on authority that
+                        // was withdrawn while it was pending. Fail closed.
+                        if let Some(why) = self.revoked_now(p) {
+                            let r = format!("revoked during approval wait: {why}");
+                            let acct = acct(p, "revoked_during_wait", Some(id.clone()));
+                            self.audit_append(
+                                tool,
+                                args,
+                                "deny",
+                                "blocked",
+                                &r,
+                                Some(&approver),
+                                &acct,
+                            );
+                            return self.blocked(req, Decision::Deny, "revoked_during_wait", r);
+                        }
+                        if !per_request {
+                            if let Err(r) = self.ensure_fresh(now_unix()) {
+                                let acct = acct(p, "expired_during_wait", Some(id.clone()));
+                                self.audit_append(
+                                    tool,
+                                    args,
+                                    "deny",
+                                    "blocked",
+                                    &r,
+                                    Some(&approver),
+                                    &acct,
+                                );
+                                return self.blocked(req, Decision::Deny, "expired_during_wait", r);
+                            }
+                        }
                         let acct = self.acct_chain(p, &inbound, &trace, Some(id.clone()));
-                        let mut out =
-                            self.forward(req, tool, args, decision, &reason, Some(&approver), acct);
+                        let mut out = self.forward(
+                            req,
+                            tool,
+                            args,
+                            decision,
+                            &reason,
+                            Some(&approver),
+                            budget_limit,
+                            acct,
+                        );
                         out.outcome = format!("approved by {approver}; executed");
                         out
                     }
@@ -814,8 +892,24 @@ impl Gateway {
         decision: Decision,
         reason: &str,
         approver: Option<&str>,
+        budget_limit: Option<u32>,
         acct: Accountability,
     ) -> Outcome {
+        // Consume the per-run budget FIRST -- atomically when the rule caps this
+        // tool -- so a concurrent burst that all passed the snapshot pre-check
+        // can't overshoot the cap, and a budget-denied call never ships or acts.
+        match budget_limit {
+            Some(max) => {
+                if !self.counts.try_increment(tool, max) {
+                    let r = format!("budget exceeded: {tool} limited to {max} call(s) per run");
+                    self.audit_append(tool, args, "deny", "blocked", &r, approver, &acct);
+                    return self.blocked(req, Decision::Deny, "budget", r);
+                }
+            }
+            None => {
+                self.counts.increment(tool);
+            }
+        }
         // High-assurance: durably record the authorization before acting.
         if let Err(reason) = self.ship_blocking(tool, args, decision.as_str(), &acct) {
             self.audit_append(
@@ -829,7 +923,6 @@ impl Gateway {
             );
             return self.blocked(req, Decision::Deny, "sink_unavailable", reason);
         }
-        self.counts.increment(tool);
         // Mint + inject a Txn-Token (call context) for the next hop, then forward.
         let send = self.inject_txn(req, tool, args, &acct);
         // Hold the upstream lock only for the forwarded round-trip.

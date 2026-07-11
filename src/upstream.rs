@@ -24,6 +24,31 @@ struct Child0 {
     reader: Option<BufReader<ChildStdout>>,
 }
 
+/// Upper bound on a single upstream response line (bytes). Generous for real
+/// tool output; caps a runaway/hostile upstream so it can't OOM the proxy.
+const MAX_UPSTREAM_LINE: usize = 8 * 1024 * 1024;
+
+/// Read one `\n`-terminated line, but never buffer more than `cap` bytes. On a
+/// line that exceeds the cap we stop and return what we have (which will fail to
+/// parse as JSON -> a clean upstream error), rather than growing without bound.
+fn read_line_capped<R: BufRead>(r: &mut R, cap: usize) -> (std::io::Result<usize>, String) {
+    let mut raw: Vec<u8> = Vec::new();
+    let mut byte = [0u8; 1];
+    loop {
+        match r.read(&mut byte) {
+            Ok(0) => break, // EOF
+            Ok(_) => {
+                raw.push(byte[0]);
+                if byte[0] == b'\n' || raw.len() >= cap {
+                    break;
+                }
+            }
+            Err(e) => return (Err(e), String::from_utf8_lossy(&raw).into_owned()),
+        }
+    }
+    (Ok(raw.len()), String::from_utf8_lossy(&raw).into_owned())
+}
+
 /// A real MCP server over stdio (newline-delimited JSON-RPC), resilient to
 /// upstream crashes and hangs: each call is bounded by a timeout, and the child
 /// is restarted on crash or timeout so the next call works.
@@ -114,8 +139,10 @@ impl Upstream for StdioUpstream {
         };
         let (tx, rx) = mpsc::channel();
         std::thread::spawn(move || {
-            let mut buf = String::new();
-            let res = reader.read_line(&mut buf);
+            // Bounded read: a hostile/buggy upstream streaming an unterminated
+            // line could otherwise grow `buf` without limit (OOM) within the
+            // timeout window. Cap it; a truncated line simply fails to parse.
+            let (res, buf) = read_line_capped(&mut reader, MAX_UPSTREAM_LINE);
             let _ = tx.send((reader, res, buf));
         });
 

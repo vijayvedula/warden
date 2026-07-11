@@ -6,6 +6,37 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Security
+Hardening pass from an adversarial review of the security-critical paths.
+- **Decision pipeline fail-closed:** a `tools/call` with a missing/non-string
+  `name` is now denied and audited, not forwarded to the upstream ungated.
+- **Audit hash integrity:** the tamper-evident row hash is computed over a
+  canonical JSON encoding instead of a `|`-delimited join, closing a
+  field-boundary collision that could rewrite a record without breaking the
+  chain. (Chains written by earlier builds will not re-verify — regenerate.)
+- **Token audience/issuer binding:** JWT verification now *requires* `aud`/`iss`
+  when `--aud`/`--iss` are configured (previously an absent claim passed).
+- **HTTP DoS:** an oversized/unparseable `Content-Length` is rejected (413/400)
+  before allocation, fixing a one-request process abort; accepted sockets get
+  read/write timeouts (slowloris) and no longer drop fragmented requests.
+- **Post-approval re-validation:** revocation and token freshness are re-checked
+  after an approval wait, so authority withdrawn during the wait is honored.
+- **Atomic budgets:** `max_per_run` is reserved atomically at forward time,
+  removing a check-then-increment race that let concurrent calls overshoot.
+- **Policy numeric coercion:** numeric `gt`/`lt`/`eq` conditions accept a
+  number sent as a string, closing a threshold-gate bypass.
+- **Redaction of numeric leaves:** PII/PANs sent as JSON numbers are now scanned
+  and redacted (previously only strings were).
+- **DPoP:** `iat` is now required (RFC 9449); proofs without it are rejected.
+- **Per-request identity:** a missing/invalid bearer in per-request mode yields
+  an unauthenticated principal (never the session principal); `--token` and
+  `--request-identity` are mutually exclusive.
+- **Outbound JWKS/OIDC fetch:** requires `https`, with connect/read timeouts, a
+  capped redirect chain, and a body-size limit (SSRF/DoS hardening).
+- Smaller: OCSF success-status precedence fix, escaped `decision` in JSON logs,
+  bounded upstream response read, and a `verify` note that rollback is only
+  detectable with a signed anchor.
+
 ### Added
 - Public open-source release.
 - Dual licensing under **MIT OR Apache-2.0**.

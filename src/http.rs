@@ -33,6 +33,14 @@ pub fn shutting_down() -> bool {
     SHUTDOWN.load(Ordering::SeqCst)
 }
 
+/// Hard cap on a request body. A `Content-Length` above this is rejected with
+/// 413 *before* any allocation -- otherwise a huge value makes `vec![0u8; n]`
+/// fail allocation, which aborts the whole process (a one-request remote DoS).
+const MAX_BODY: usize = 8 * 1024 * 1024;
+
+/// Per-socket read/write timeout: bounds slowloris and stuck peers.
+const READ_TIMEOUT_SECS: u64 = 30;
+
 /// Serve until shutdown, then drain in-flight connections up to `drain_secs`.
 pub fn serve(addr: &str, gateway: Arc<Gateway>, drain_secs: u64) -> Result<(), String> {
     let listener = TcpListener::bind(addr).map_err(|e| format!("bind {addr}: {e}"))?;
@@ -43,6 +51,13 @@ pub fn serve(addr: &str, gateway: Arc<Gateway>, drain_secs: u64) -> Result<(), S
     while !shutting_down() {
         match listener.accept() {
             Ok((s, _)) => {
+                // The listener is non-blocking (for the shutdown poll); the
+                // accepted socket must NOT inherit that, or a request whose bytes
+                // arrive in a later TCP segment reads WouldBlock and is dropped.
+                // Explicit read/write timeouts also bound slowloris.
+                let _ = s.set_nonblocking(false);
+                let _ = s.set_read_timeout(Some(Duration::from_secs(READ_TIMEOUT_SECS)));
+                let _ = s.set_write_timeout(Some(Duration::from_secs(READ_TIMEOUT_SECS)));
                 ACTIVE.fetch_add(1, Ordering::SeqCst);
                 let g = gateway.clone();
                 thread::spawn(move || {
@@ -99,7 +114,19 @@ fn handle(stream: TcpStream, gateway: Arc<Gateway>) -> std::io::Result<()> {
         if let Some((k, v)) = h.split_once(':') {
             let key = k.trim();
             if key.eq_ignore_ascii_case("content-length") {
-                content_length = v.trim().parse().unwrap_or(0);
+                // A present-but-unparseable length is a malformed request, not 0.
+                match v.trim().parse::<usize>() {
+                    Ok(n) => content_length = n,
+                    Err(_) => {
+                        return respond(
+                            &stream,
+                            "400 Bad Request",
+                            "text/plain",
+                            &[],
+                            b"invalid Content-Length",
+                        );
+                    }
+                }
             } else if key.eq_ignore_ascii_case("dpop") {
                 dpop = Some(v.trim().to_string());
             } else if key.eq_ignore_ascii_case("host") {
@@ -111,6 +138,17 @@ fn handle(stream: TcpStream, gateway: Arc<Gateway>) -> std::io::Result<()> {
     }
 
     let w = &stream;
+    // Reject an oversized body before allocating it (see MAX_BODY). This guards
+    // both POST paths' `vec![0u8; content_length]` from an abort-on-OOM.
+    if content_length > MAX_BODY {
+        return respond(
+            w,
+            "413 Payload Too Large",
+            "text/plain",
+            &[],
+            b"request body exceeds limit",
+        );
+    }
     // Endpoint authN (gateway mode): everything except /healthz needs the bearer.
     if let Some(expected) = gateway.http_auth() {
         if path != "/healthz" && !bearer_ok(authorization.as_deref(), expected) {

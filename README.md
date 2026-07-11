@@ -19,7 +19,10 @@ Capability is the labs' game; the open problem is letting autonomous agents
 **act** with bounded authority, verifiable behaviour, and accountability. Warden
 is the *brake* and the *black-box recorder* for agent actions.
 
-> MVP status: single-node, file-backed, MCP stdio transport. Not production-hardened.
+> Beta: single-node, file-backed; MCP over stdio or HTTP. Core paths have been
+> through an adversarial security review (see [SECURITY.md](SECURITY.md) and
+> [docs/production-readiness.md](docs/production-readiness.md)) but not yet an
+> independent audit — run observe-only first, pin a release for enforcement.
 
 ## Quickstart
 

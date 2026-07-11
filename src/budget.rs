@@ -49,6 +49,28 @@ impl Budget {
         let n = counts.entry(tool.to_string()).or_insert(0);
         *n += 1;
         let new = *n;
+        self.persist(&counts);
+        new
+    }
+
+    /// Atomically reserve one unit against a per-run `max`. Returns true (and
+    /// records the use) when the current count is below `max`; false with no
+    /// change when the cap is already reached. Holding the lock across the
+    /// compare-and-increment closes the check-then-increment race where N
+    /// concurrent callers each read a stale snapshot under the cap and all
+    /// proceed, overshooting `max_per_run`.
+    pub fn try_increment(&self, tool: &str, max: u32) -> bool {
+        let mut counts = self.counts.lock().unwrap();
+        let cur = counts.get(tool).copied().unwrap_or(0);
+        if cur >= max {
+            return false;
+        }
+        counts.insert(tool.to_string(), cur + 1);
+        self.persist(&counts);
+        true
+    }
+
+    fn persist(&self, counts: &HashMap<String, u32>) {
         if let Some(path) = &self.path {
             if let Some(parent) = path.parent() {
                 let _ = std::fs::create_dir_all(parent);
@@ -64,13 +86,25 @@ impl Budget {
                 .to_string(),
             );
         }
-        new
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn try_increment_enforces_cap() {
+        let b = Budget::memory();
+        assert!(b.try_increment("wire", 2)); // 1/2
+        assert!(b.try_increment("wire", 2)); // 2/2
+        assert!(!b.try_increment("wire", 2)); // capped -- no overshoot
+                                              // Independent per tool.
+        assert!(b.try_increment("read", 1));
+        assert!(!b.try_increment("read", 1));
+        // The rejected reservations did not increment the count.
+        assert_eq!(b.snapshot().get("wire"), Some(&2));
+    }
 
     #[test]
     fn durable_counts_survive_reload() {

@@ -248,6 +248,13 @@ impl Redactor {
                 Some(label) => Value::String(format!("[REDACTED:{label}]")),
                 None => v.clone(),
             },
+            // Numeric leaves can still carry PII/secrets -- a card number (PAN) or
+            // SSN sent as a JSON number would otherwise skip value scanning and
+            // land in the audit row / SIEM in the clear. Scan the string form.
+            Value::Number(n) => match self.value_label(&n.to_string()) {
+                Some(label) => Value::String(format!("[REDACTED:{label}]")),
+                None => v.clone(),
+            },
             _ => v.clone(),
         }
     }
@@ -334,6 +341,15 @@ mod tests {
         assert_eq!(out["password"], "[REDACTED:secret]");
         assert_eq!(out["nested"]["ssn"], "[REDACTED:national_id]");
         assert_eq!(out["note"], "ring me later");
+    }
+
+    #[test]
+    fn pci_redacts_numeric_card_value() {
+        // A PAN sent as a JSON *number* under a non-matching key must still be
+        // scanned and redacted (it previously slipped through untouched).
+        let r = Redactor::from_config("pci", "", true);
+        let out = r.redact(&json!({ "x": 4111111111111111u64 }));
+        assert_eq!(out["x"], "[REDACTED:credit_card]");
     }
 
     #[test]

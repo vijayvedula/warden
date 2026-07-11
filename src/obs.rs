@@ -48,12 +48,12 @@ impl Obs {
             // trace fields for o11y correlation.
             let h = crate::util::sha256_hex(&format!("{token_jti}|{}|{tool}", now_unix()));
             eprintln!(
-                "{{\"ts\":{},\"ev\":\"decision\",\"service.name\":\"warden\",\"trace_id\":\"{}\",\"span_id\":\"{}\",\"tool\":{},\"decision\":\"{}\",\"outcome\":{},\"latency_ms\":{},\"accountable\":{},\"jti\":{}}}",
+                "{{\"ts\":{},\"ev\":\"decision\",\"service.name\":\"warden\",\"trace_id\":\"{}\",\"span_id\":\"{}\",\"tool\":{},\"decision\":{},\"outcome\":{},\"latency_ms\":{},\"accountable\":{},\"jti\":{}}}",
                 now_unix(),
                 &h[..32],
                 &h[32..48],
                 json_str(tool),
-                decision,
+                json_str(decision),
                 json_str(outcome),
                 latency.as_millis(),
                 json_str(accountable),

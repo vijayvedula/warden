@@ -1,5 +1,8 @@
 # Rust build artifacts
 /target
+/fuzz/target
+# the fuzz crate is a dev tool; its lockfile is not part of the release
+/fuzz/Cargo.lock
 **/*.rs.bk
 *.pdb
 

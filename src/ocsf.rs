@@ -21,9 +21,11 @@ pub fn event(
     token_jti: &str,
     ts_unix: u64,
 ) -> Value {
-    // status: Success for allow/executed, Failure otherwise.
+    // status: Success for an executed allow, or an approved-then-executed call.
+    // Parenthesised intent + prefix match: `contains("approved")` previously
+    // mislabelled denials like an "unapproved" outcome as Success to the SIEM.
     let success =
-        decision == "allow" && outcome.starts_with("executed") || outcome.contains("approved");
+        (decision == "allow" && outcome.starts_with("executed")) || outcome.starts_with("approved");
     let (status_id, status) = if success {
         (1, "Success")
     } else {
