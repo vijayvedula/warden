@@ -15,12 +15,18 @@ policy -- **allow / deny / require-approval** -- held for a human when required,
 and recorded in a **tamper-evident audit chain**.
 
 <p align="center">
-  <a href="https://vijayvedula.github.io/warden/explainers/warden-overview.html">
-    <img src="docs/media/warden-overview.gif" alt="Warden in 15 seconds: a proxy on the action boundary that verifies identity, applies policy, and records every call" width="820">
-  </a>
+  <strong>▶ Watch the interactive explainers:
+  <a href="https://vijayvedula.github.io/warden/explainers/">vijayvedula.github.io/warden/explainers</a></strong>
 </p>
 <p align="center">
-  <em>▶ <a href="https://vijayvedula.github.io/warden/explainers/warden-overview.html">Watch the full interactive explainer</a> &middot; <a href="https://vijayvedula.github.io/warden/explainers/">all explainers</a></em>
+  <sub>
+    Animated walkthroughs — click any:
+    <a href="https://vijayvedula.github.io/warden/explainers/warden-overview.html">The Platform</a> ·
+    <a href="https://vijayvedula.github.io/warden/explainers/accountable-authorization.html">Accountable Authorization</a> ·
+    <a href="https://vijayvedula.github.io/warden/explainers/reference-architecture.html">Reference Architecture</a> ·
+    <a href="https://vijayvedula.github.io/warden/explainers/threat-model.html">Threat Model</a> ·
+    <a href="https://vijayvedula.github.io/warden/explainers/platform-integration.html">Platform Integration</a>
+  </sub>
 </p>
 
 The thesis: in the agentic era the binding constraint is *trust, not capability*.
