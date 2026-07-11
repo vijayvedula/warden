@@ -1,0 +1,32 @@
+/* Warden brand accents for the mdBook theme. */
+:root {
+  --warden-gold: #ffd166;
+  --warden-blue: #5ec8e8;
+}
+
+.menu-title {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+/* Links pick up the brand blue; visited stays legible. */
+.content a:not(.header) {
+  color: var(--warden-blue);
+}
+
+/* A convention used across the guides for the three decisions. */
+.content code.allow { color: #6ee7a8; }
+.content code.deny { color: #ff6f6f; }
+.content code.hold { color: var(--warden-gold); }
+
+/* Callout blocks: > **Note:** / > **Warning:** */
+blockquote {
+  border-inline-start: 3px solid var(--warden-gold);
+}
+
+/* Tighten wide tables so they scroll rather than overflow the page. */
+.content table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}

@@ -1,7 +1,8 @@
-name: Explainers (GitHub Pages)
+name: Docs (GitHub Pages)
 
-# Publishes the curated explainer decks in docs/explainers/ to GitHub Pages.
-# Only committed files are deployed, so excluded explainers never leak.
+# Publishes the Warden User Guide (mdBook) at the Pages root, with the curated
+# explainer decks bundled under /explainers/. Only committed files are deployed,
+# so excluded explainers never leak.
 #
 # One-time setup after making the repo public:
 #   Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
@@ -10,7 +11,10 @@ name: Explainers (GitHub Pages)
 on:
   push:
     branches: [main]
-    paths: ["docs/explainers/**", ".github/workflows/pages.yml"]
+    paths:
+      - "docs/guide/**"
+      - "docs/explainers/**"
+      - ".github/workflows/pages.yml"
   workflow_dispatch: {}
 
 permissions:
@@ -18,7 +22,6 @@ permissions:
   pages: write
   id-token: write
 
-# Allow one concurrent deploy; don't cancel an in-progress run.
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -31,9 +34,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: peaceiris/actions-mdbook@v2
+        with:
+          mdbook-version: latest
+      - name: Build the user guide
+        run: mdbook build docs/guide
+      - name: Bundle explainers under /explainers
+        run: cp -r docs/explainers docs/guide/book/explainers
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/explainers
+          path: docs/guide/book
       - id: deployment
         uses: actions/deploy-pages@v4

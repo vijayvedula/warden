@@ -1,0 +1,20 @@
+[book]
+title = "Warden User Guide"
+description = "Use and integrate Warden — an action control plane for AI agents — across LangGraph, AWS Bedrock, Databricks, Google ADK, and Azure AI."
+authors = ["Warden contributors"]
+language = "en"
+src = "src"
+
+[output.html]
+default-theme = "navy"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/vijayvedula/warden"
+edit-url-template = "https://github.com/vijayvedula/warden/edit/main/docs/guide/{path}"
+additional-css = ["theme/warden.css"]
+
+[output.html.fold]
+enable = true
+level = 1
+
+[output.html.playground]
+runnable = false
