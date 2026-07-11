@@ -26,7 +26,7 @@ dependencies = []
 # Production asymmetric JWT signing (adapters may hand claims to a platform KMS
 # instead; PyJWT is the local/dev signer).
 jwt = ["pyjwt[crypto]>=2.8"]
-dev = ["pytest>=7", "ruff>=0.4", "pyjwt[crypto]>=2.8"]
+dev = ["pytest>=9.1.1", "ruff>=0.4", "pyjwt[crypto]>=2.8"]
 
 [project.urls]
 Homepage = "https://github.com/vijayvedula/warden"
