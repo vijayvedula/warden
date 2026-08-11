@@ -37,5 +37,5 @@ hex = "0.4"
 toml = "0.8"
 jsonwebtoken = { version = "10.4.0", default-features = false, features = ["use_pem", "rust_crypto"] }
 libc = "0.2.186"
-base64 = "0.22.1"
+base64 = "0.23.1"
 ureq = "3.3.0"
