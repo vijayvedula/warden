@@ -1,5 +1,9 @@
 [package]
-name = "warden"
+# `warden` and `warden-core` are both taken on crates.io by an unrelated database-migration
+# tool, so the published package is `warden-agent`. The family names itself by layer —
+# warden-agent gates *actions*, warden-connect gates *connections* — and warden-delegate and
+# warden-trace are reserved for the same reason.
+name = "warden-agent"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.89"
@@ -12,6 +16,15 @@ keywords = ["mcp", "ai-agents", "policy", "audit", "authorization"]
 categories = ["command-line-utilities", "authentication"]
 exclude = ["/docs", "/examples", "/fixtures", "/fuzz", "/sdk", "/.github"]
 
+# The library keeps the name `warden`, independently of the package. That is what makes the
+# rename cost nothing: `use warden::Gateway` still compiles here in `main.rs` and in every
+# dependent, because rustc takes the extern crate name from the lib TARGET, not the package.
+[lib]
+name = "warden"
+path = "src/lib.rs"
+
+# And the binary is still `warden`, so `cargo install warden-agent` installs a `warden`
+# command. A user types the product's name; the registry entry is a packaging detail.
 [[bin]]
 name = "warden"
 path = "src/main.rs"
