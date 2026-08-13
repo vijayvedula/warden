@@ -10,7 +10,10 @@ cargo-fuzz = true
 [dependencies]
 libfuzzer-sys = "0.4"
 serde_json = "1"
-warden = { path = ".." }
+# The package is `warden-agent`, but its lib target is still `warden`, so the
+# fuzz targets keep using `warden::...`. Depend on the package by its real name
+# and bind it to the crate name `warden`.
+warden = { package = "warden-agent", path = ".." }
 
 # Keep the fuzz crate out of the parent's build graph.
 [workspace]
