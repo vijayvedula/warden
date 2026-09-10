@@ -35,7 +35,7 @@ serde_json = "1"
 sha2 = "0.10"
 hex = "0.4"
 toml = "0.8"
-jsonwebtoken = { version = "10.4.0", default-features = false, features = ["use_pem", "rust_crypto"] }
+jsonwebtoken = { version = "11.0.0", default-features = false, features = ["use_pem", "rust_crypto"] }
 libc = "0.2.186"
 base64 = "0.22.1"
 ureq = "3.3.0"
